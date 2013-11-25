@@ -2,6 +2,20 @@ from github import Github
 from github import MainClass
 from github.Requester import Requester
 import re
+import argparse
+
+PARSER = argparse.ArgumentParser(description="Control remote git repos")
+
+PARSER.add_argument('--username', '-u', type=str)
+PARSER.add_argument('--password', '-p', type=str)
+PARSER.add_argument('host', choices=['github'], type=str)
+
+SUBPARSER = PARSER.add_subparsers()
+
+SUBPARSER_LIST = SUBPARSER.add_parser('list')
+
+if __name__ == '__main__':
+    ARGS = PARSER.parse_args()
 
 class Require2FAError(Exception):
     pass
@@ -26,4 +40,3 @@ def request_token(username, password,
         raise Require2FAError()
     else:
         return message
-
