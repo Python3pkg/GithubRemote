@@ -30,11 +30,10 @@ def request_token(username, password,
     request_header = None
     if code_2fa:
         request_header = {'x-github-otp': code_2fa}
-    s = '{{"scopes": ["{}"], "note": "{}"}}'.format(scopes, user_agent)
     status, header, message = requester.requestJson(
             "POST", "/authorizations", 
-            json.loads(s),
-            request_header)
+            input={"scopes": scopes, "note": str(user_agent)},
+            headers=request_header)
     if status == 401 and re.match(r'.*required.*', header['x-github-otp']):
         raise Require2FAError()
     else:
@@ -44,10 +43,10 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
     try:
         resp = request_token(ARGS.username, ARGS.password,
-                'repos', 'TESTTEST')
+                ['repo'], 'TESTTEST')
     except Require2FAError:
         code = input("Enter code: ")
         resp = request_token(ARGS.username, ARGS.password,
-                'repos', 'TESTTEST', code)
+                ['repo'], 'TESTTEST', code)
     print(resp)
         
