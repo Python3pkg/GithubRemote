@@ -67,6 +67,86 @@ class MainWidget(QMainWindow):
         """ TODO """
         pass
 
+class userSignInDialog(QDialog):
+    def __init__(self, parent=None):
+        super(ScriptAddDialog, self).__init__(
+            parent,
+            windowTitle="Sign In")
+
+        # Form
+        self.form = QFormLayout()
+        
+        # ButtonBox
+        buttonBox = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            accepted=self.accept, rejected=self.reject)
+        
+        # Layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(self.form)
+        self.mainLayout.addWidget(buttonBox)
+        self.setLayout(self.mainLayout)
+
+class user2FADialog(QDialog):
+    def __init__(self, parent=None):
+        super(ScriptAddDialog, self).__init__(
+            parent,
+            windowTitle="2FA Required")
+
+        # Form
+        self.form = QFormLayout()
+        
+        # ButtonBox
+        buttonBox = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            accepted=self.accept, rejected=self.reject)
+        
+        # Layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(self.form)
+        self.mainLayout.addWidget(buttonBox)
+        self.setLayout(self.mainLayout)
+
+class repoAddDialog(QDialog):
+    def __init__(self, parent=None):
+        super(ScriptAddDialog, self).__init__(
+            parent,
+            windowTitle="Add Repo")
+
+        # Form
+        self.form = QFormLayout()
+        
+        # ButtonBox
+        buttonBox = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            accepted=self.accept, rejected=self.reject)
+        
+        # Layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(self.form)
+        self.mainLayout.addWidget(buttonBox)
+        self.setLayout(self.mainLayout)
+
+class repoRemoveDialog(QDialog):
+    def __init__(self, parent=None):
+        super(ScriptAddDialog, self).__init__(
+            parent,
+            windowTitle="Remove Repo")
+
+        # Form
+        self.form = QFormLayout()
+        
+        # ButtonBox
+        buttonBox = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            accepted=self.accept, rejected=self.reject)
+        
+        # Layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(self.form)
+        self.mainLayout.addWidget(buttonBox)
+        self.setLayout(self.mainLayout)
+
 def main():
     app = QApplication(sys.argv)
     ex = MainWidget()
