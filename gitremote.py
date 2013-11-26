@@ -62,7 +62,6 @@ if __name__ == '__main__':
     except ValueError:
         loggin_info_json = json.loads('{}')
     
-    
     try:
         token = loggin_info_json[ARGS.host][ARGS.username]['token']
     except KeyError:
