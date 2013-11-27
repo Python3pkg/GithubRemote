@@ -7,6 +7,9 @@ from github.Requester import Requester
 import re
 import argparse
 
+class Require2FAError(Exception):
+    pass
+
 def request_token(
         username, password, scopes, user_agent, code_2fa=None,
         base_url=MainClass.DEFAULT_BASE_URL, 
