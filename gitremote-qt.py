@@ -6,6 +6,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import sys
 import pickle
+import urllib
 
 class MainWidget(QMainWindow):
 
@@ -17,12 +18,12 @@ class MainWidget(QMainWindow):
                 geometry=QRect(300, 300, 600, 372))
 
         self.repoAddAction = QAction(
-                #QIcon('images/repoAdd.png'),
+                QIcon('images/plus_48.png'),
                 '&Add Repo', self,
                 statusTip='Add a new repo')
         
         self.repoRemoveAction = QAction(
-                #QIcon('images/repoRemove.png'),
+                QIcon('images/minus.png'),
                 '&Remove Repo', self,
                 statusTip='Remove repo')
        
@@ -34,13 +35,22 @@ class MainWidget(QMainWindow):
         self.userSignOutAction = QAction(
                 'User Sign&out', self,
                 statusTip='Sign Out')
+        
+        self.userLabel = QLabel(self)
+        self.userAction = QAction('', self)
+        self.userAction.setCheckable(False)
 
         # ToolBar
         self.toolBar = self.addToolBar('Main')
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.toolBar.addAction(self.repoAddAction)
         self.toolBar.addAction(self.repoRemoveAction)
+        self.toolBar.addWidget(spacer)
+        self.toolBar.addWidget(self.userLabel)
+        self.toolBar.addAction(self.userAction)
 
         # Menu
         menuBar = self.menuBar()
@@ -52,7 +62,7 @@ class MainWidget(QMainWindow):
         actionMenu.addAction(self.repoRemoveAction)
 
         # reposTableWidget
-        self.reposTableWidgetHeaders = ["Name"]
+        self.reposTableWidgetHeaders = ["Name", "Description"]
         self.reposTableWidget = QTableWidget(0,
                 len(self.reposTableWidgetHeaders),
                 selectionBehavior = QAbstractItemView.SelectRows,
@@ -69,6 +79,19 @@ class MainWidget(QMainWindow):
         
         self.authenticate()
         self.reposRefresh()
+        self.updateImage()
+        
+    def updateImage(self):
+
+        if not self.github:
+            return
+        url = self.github.get_user().avatar_url
+        data = urllib.urlopen(url).read()
+        pixmap = QPixmap()
+        pixmap.loadFromData(data)
+        self.userAction.setIcon(QIcon(pixmap))
+        name = self.github.get_user().name
+        self.userLabel.setText(name)
 
     def reposRefresh(self):
 
@@ -78,7 +101,9 @@ class MainWidget(QMainWindow):
         self.reposTableWidget.setRowCount(self.github.get_user().public_repos)
         for row, repo in enumerate(repos):
             nameTableWidgetItem = QTableWidgetItem(str(repo.name))
+            descTableWidgetItem = QTableWidgetItem(str(repo.description))
             self.reposTableWidget.setItem(row, 0, nameTableWidgetItem)
+            self.reposTableWidget.setItem(row, 1, descTableWidgetItem)
         for i in range(self.reposTableWidget.columnCount()-1):
             self.reposTableWidget.resizeColumnToContents(i)
         self.reposTableWidget.resizeRowsToContents()
