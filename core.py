@@ -37,4 +37,3 @@ def request_token(
     else:
         data = json.loads(data)
         return Authorization(requester, headers, data, True)
-
