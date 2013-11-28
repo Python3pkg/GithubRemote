@@ -3,9 +3,11 @@
 # Copyright (C) 2013, Cameron White
 from github import Github
 from github import MainClass
+from github.Authorization import Authorization
 from github.Requester import Requester
 import re
 import argparse
+import json
 
 class Require2FAError(Exception):
     pass
@@ -24,13 +26,15 @@ def request_token(
         request_header = {'x-github-otp': code_2fa}
     else:
         request_header = None
-
-    status, header, message = requester.requestJson(
+     
+    status, headers, data = requester.requestJson(
             "POST", "/authorizations", 
             input={"scopes": scopes, "note": str(user_agent)},
             headers=request_header)
-
-    if status == 401 and re.match(r'.*required.*', header['x-github-otp']):
+   
+    if status == 401 and re.match(r'.*required.*', headers['x-github-otp']):
         raise Require2FAError()
     else:
-        return status, header, message
+        data = json.loads(data)
+        return Authorization(requester, headers, data, True)
+
