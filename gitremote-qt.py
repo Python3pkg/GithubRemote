@@ -56,6 +56,7 @@ class MainWidget(QMainWindow):
         self.reposTableWidget = QTableWidget(0,
                 len(self.reposTableWidgetHeaders),
                 selectionBehavior = QAbstractItemView.SelectRows,
+                selectionMode = QAbstractItemView.SingleSelection,
                 editTriggers = QAbstractItemView.NoEditTriggers,
                 itemSelectionChanged = self.actionsUpdate)
         self.reposTableWidget.setHorizontalHeaderLabels(
