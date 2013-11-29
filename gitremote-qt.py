@@ -9,6 +9,8 @@ import sys
 import pickle
 import urllib
 
+GITHUB = None
+
 class MainWidget(QMainWindow):
 
     def __init__(self, parent=None):
@@ -28,7 +30,7 @@ class MainWidget(QMainWindow):
                 QIcon('images/minus.png'),
                 '&Remove Repo', self,
                 statusTip='Remove repo')
-       
+
         self.userSignInAction = QAction(
                 'User Sign&in', self,
                 statusTip='Sign In')
@@ -85,22 +87,22 @@ class MainWidget(QMainWindow):
         
     def updateImage(self):
 
-        if not self.github:
+        if not GITHUB:
             return
-        url = self.github.get_user().avatar_url
+        url = GITHUB.get_user().avatar_url
         data = urllib.urlopen(url).read()
         pixmap = QPixmap()
         pixmap.loadFromData(data)
         self.userAction.setIcon(QIcon(pixmap))
-        name = self.github.get_user().name
+        name = GITHUB.get_user().name
         self.userLabel.setText(name)
 
     def reposRefresh(self):
 
-        if not self.github:
+        if not GITHUB:
             return
-        repos = self.github.get_user().get_repos()
-        self.reposTableWidget.setRowCount(self.github.get_user().public_repos)
+        repos = GITHUB.get_user().get_repos()
+        self.reposTableWidget.setRowCount(GITHUB.get_user().public_repos)
         for row, repo in enumerate(repos):
             nameTableWidgetItem = QTableWidgetItem(str(repo.name))
             descTableWidgetItem = QTableWidgetItem(str(repo.description))
@@ -111,14 +113,16 @@ class MainWidget(QMainWindow):
         self.reposTableWidget.resizeRowsToContents()
 
     def authenticate(self):
+        
+        global GITHUB
 
         try:
             f = open('authentication.pickle', 'r')
             authentication = pickle.load(f)
-            self.github = Github(authentication.token)
+            GITHUB = Github(authentication.token)
             f.close()
         except IOError, EOFError:
-            self.github = None
+            GITHUB = None
 
     def actionsUpdate(self):
         """ TODO """
@@ -130,9 +134,9 @@ class MainWidget(QMainWindow):
             pass
     
     def repoAdd(self):
-        wizard = RepoAddWizard(self.github, self)
+        wizard = RepoAddWizard(self)
         if wizard.exec_():
-            self.github.get_user().create_repo(
+            GITHUB.get_user().create_repo(
                 wizard.repo_details['name'],
                 description=wizard.repo_details['description'],
                 private=wizard.repo_details['private'],
@@ -241,15 +245,14 @@ class RepoTypeWizardPage(QWizardPage):
             return 1
 
 class GithubRepoWizardPage(QWizardPage):
-    def __init__(self, github, parent=None):
+    def __init__(self, parent=None):
         super(GithubRepoWizardPage, self).__init__(
             parent,
             title="Github Repository",
             subTitle="Configure the new Github repository")
         
         self.parent = parent
-        self.github = github
-
+        
         #  LineEdits
         self.nameEdit = QLineEdit(textChanged=self.update)
         self.descriptionEdit = QLineEdit(textChanged=self.update)
@@ -257,7 +260,7 @@ class GithubRepoWizardPage(QWizardPage):
         self.initCheckBox = QCheckBox(stateChanged=self.update)
         self.gitignoreComboBox = QComboBox(currentIndexChanged=self.update)
         self.gitignoreComboBox.addItem('None')
-        for i in gitignore_types(self.github):
+        for i in gitignore_types(GITHUB):
             self.gitignoreComboBox.addItem(i)
 
         hbox = QHBoxLayout()
@@ -278,7 +281,7 @@ class GithubRepoWizardPage(QWizardPage):
         self.mainLayout.addLayout(form)
         self.setLayout(self.mainLayout)
     
-        if not github.get_user().plan:
+        if not GITHUB.get_user().plan:
             self.privateCheckBox.setEnabled(False)
 
     def update(self):
@@ -303,7 +306,7 @@ class GithubRepoWizardPage(QWizardPage):
 
 class RepoAddWizard(QWizard):
 
-    def __init__(self, github, parent=None):
+    def __init__(self, parent=None):
         super(RepoAddWizard, self).__init__(
                 parent,
                 windowTitle="Add Repo")
@@ -311,7 +314,7 @@ class RepoAddWizard(QWizard):
         self.repo_details = {}
 
         self.setPage(0, RepoTypeWizardPage(self))
-        self.setPage(1, GithubRepoWizardPage(github,self))
+        self.setPage(1, GithubRepoWizardPage(self))
 
 class user2FADialog(QDialog):
     def __init__(self, parent=None):
