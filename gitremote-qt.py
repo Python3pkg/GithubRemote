@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
 from github import Github
+from core import *
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import sys
@@ -21,6 +22,7 @@ class MainWidget(QMainWindow):
                 QIcon('images/plus_48.png'),
                 '&Add Repo', self,
                 statusTip='Add a new repo')
+        self.repoAddAction.triggered.connect(self.repoAdd)
         
         self.repoRemoveAction = QAction(
                 QIcon('images/minus.png'),
@@ -126,6 +128,16 @@ class MainWidget(QMainWindow):
         wizard = userSignInWizard(self)
         if wizard.exec_():
             pass
+    
+    def repoAdd(self):
+        wizard = RepoAddWizard(self.github, self)
+        if wizard.exec_():
+            self.github.get_user().create_repo(
+                wizard.repo_details['name'],
+                description=wizard.repo_details['description'],
+                private=wizard.repo_details['private'],
+                auto_init=wizard.repo_details['init'],
+                gitignore_template=wizard.repo_details['gitignore'])
 
 class GithubCredentialsWizardPage(QWizardPage):
     def __init__(self, parent=None):
@@ -177,7 +189,6 @@ class GithubCredentialsWizardPage(QWizardPage):
         elif self.tokenRadioButton.isChecked():
             return 
 
-
 class AccountTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):
         super(AccountTypeWizardPage, self).__init__(
@@ -207,6 +218,100 @@ class userSignInWizard(QWizard):
 
         self.setPage(0, AccountTypeWizardPage())
         self.setPage(1, GithubCredentialsWizardPage())
+
+
+class RepoTypeWizardPage(QWizardPage):
+    def __init__(self, parent=None):
+        super(RepoTypeWizardPage, self).__init__(
+            parent,
+            title="Select Account Type",
+            subTitle="Select the type of Repo to create")
+    
+        self.githubRadioButton = QRadioButton("Github Repo")
+        self.githubRadioButton.toggle()
+
+        # Layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addWidget(self.githubRadioButton)
+        self.setLayout(self.mainLayout)
+    
+    def nextId(self):
+        
+        if self.githubRadioButton.isChecked():
+            return 1
+
+class GithubRepoWizardPage(QWizardPage):
+    def __init__(self, github, parent=None):
+        super(GithubRepoWizardPage, self).__init__(
+            parent,
+            title="Github Repository",
+            subTitle="Configure the new Github repository")
+        
+        self.parent = parent
+        self.github = github
+
+        #  LineEdits
+        self.nameEdit = QLineEdit(textChanged=self.update)
+        self.descriptionEdit = QLineEdit(textChanged=self.update)
+        self.privateCheckBox = QCheckBox(toggled=self.update)
+        self.initCheckBox = QCheckBox(stateChanged=self.update)
+        self.gitignoreComboBox = QComboBox(currentIndexChanged=self.update)
+        self.gitignoreComboBox.addItem('None')
+        for i in gitignore_types(self.github):
+            self.gitignoreComboBox.addItem(i)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel(
+            'Initialize this repository with a README and .gitignore'))
+        hbox.addWidget(self.initCheckBox)
+
+        # Form 
+        form = QFormLayout()
+        form.addRow("Name: ", self.nameEdit)
+        form.addRow("Description: ", self.descriptionEdit)
+        form.addRow('Private', self.privateCheckBox)
+        form.addRow(hbox)
+        form.addRow('Add .gitignore', self.gitignoreComboBox)
+        
+        # Layout
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(form)
+        self.setLayout(self.mainLayout)
+    
+        if not github.get_user().plan:
+            self.privateCheckBox.setEnabled(False)
+
+    def update(self):
+
+        sender = type(self.sender()) 
+        
+        if self.initCheckBox.isChecked():
+            self.gitignoreComboBox.setEnabled(True)
+        else:
+            self.gitignoreComboBox.setEnabled(False)
+
+        self.parent.repo_details['name'] = \
+                str(self.nameEdit.text())
+        self.parent.repo_details['description'] = \
+                str(self.descriptionEdit.text())
+        self.parent.repo_details['private'] = \
+                True if self.privateCheckBox.isChecked() else False
+        self.parent.repo_details['init'] = \
+                True if self.initCheckBox.isChecked() else False
+        self.parent.repo_details['gitignore'] = \
+                str(self.gitignoreComboBox.currentText())
+
+class RepoAddWizard(QWizard):
+
+    def __init__(self, github, parent=None):
+        super(RepoAddWizard, self).__init__(
+                parent,
+                windowTitle="Add Repo")
+        
+        self.repo_details = {}
+
+        self.setPage(0, RepoTypeWizardPage(self))
+        self.setPage(1, GithubRepoWizardPage(github,self))
 
 class user2FADialog(QDialog):
     def __init__(self, parent=None):

@@ -37,3 +37,12 @@ def request_token(
     else:
         data = json.loads(data)
         return Authorization(requester, headers, data, True)
+
+def gitignore_types(github):
+    for i in github.get_user('github')\
+                   .get_repo('gitignore')\
+                   .get_git_tree('master')\
+                   .tree:
+        t = re.split('.gitignore', i.path)
+        if t[0] is not '':
+            yield t[0]
