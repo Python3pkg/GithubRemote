@@ -39,18 +39,18 @@ def get_token():
             authenticaiton = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST')
         except Require2FAError:
+            pickle.dump(authentication, f)
             return authentication
     
         try:
             code = raw_input("Enter code: ")
             authentication = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST', code)
-
+            pickle.dump(authentication, f)
+            return authentication
         except None:
             return None
 
-        pickle.dump(authentication, f)
-        return authentication
 
 if __name__ == '__main__':
 
