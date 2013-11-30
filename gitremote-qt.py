@@ -11,6 +11,13 @@ import urllib
 
 GITHUB = None
 
+def waiting_effects(function):
+    def new_function(self):
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        function(self)
+        QApplication.restoreOverrideCursor()
+    return new_function
+
 class MainWidget(QMainWindow):
 
     def __init__(self, parent=None):
@@ -105,7 +112,8 @@ class MainWidget(QMainWindow):
         self.userAction.setIcon(QIcon(pixmap))
         name = GITHUB.get_user().name
         self.userLabel.setText(name)
-
+    
+    @waiting_effects
     def reposRefresh(self):
 
         if not GITHUB:
@@ -121,6 +129,7 @@ class MainWidget(QMainWindow):
             self.reposTableWidget.resizeColumnToContents(i)
         self.reposTableWidget.resizeRowsToContents()
 
+    @waiting_effects
     def authenticate(self):
         
         global GITHUB
@@ -132,7 +141,7 @@ class MainWidget(QMainWindow):
             f.close()
         except IOError, EOFError:
             GITHUB = None
-
+    
     def actionsUpdate(self):
         if GITHUB is None:
             self.repoAddAction.setEnabled(False)
