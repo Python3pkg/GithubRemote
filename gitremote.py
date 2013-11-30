@@ -36,7 +36,7 @@ def get_token():
             ARGS.password = getpass.getpass()
 
         try:
-            authenticaiton = request_token(
+            authentication = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST')
             pickle.dump(authentication, f)
             return authentication
