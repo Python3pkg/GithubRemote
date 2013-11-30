@@ -31,6 +31,12 @@ class MainWidget(QMainWindow):
                 '&Remove Repo', self,
                 statusTip='Remove repo')
 
+        self.repoRefreshAction = QAction(
+                QIcon('images/refresh.png'),
+                'Refresh Repos', self,
+                statusTip='Refresh list of repos')
+        self.repoRefreshAction.triggered.connect(self.reposRefresh)
+
         self.userSignInAction = QAction(
                 'User Sign&in', self,
                 statusTip='Sign In')
@@ -52,6 +58,7 @@ class MainWidget(QMainWindow):
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.toolBar.addAction(self.repoAddAction)
         self.toolBar.addAction(self.repoRemoveAction)
+        self.toolBar.addAction(self.repoRefreshAction)
         self.toolBar.addWidget(spacer)
         self.toolBar.addWidget(self.userLabel)
         self.toolBar.addAction(self.userAction)
@@ -64,6 +71,7 @@ class MainWidget(QMainWindow):
         fileMenu.addAction(self.userSignOutAction)
         actionMenu.addAction(self.repoAddAction)
         actionMenu.addAction(self.repoRemoveAction)
+        actionMenu.addAction(self.repoRefreshAction)
 
         # reposTableWidget
         self.reposTableWidgetHeaders = ["Name", "Description"]
@@ -146,6 +154,7 @@ class MainWidget(QMainWindow):
                 has_wiki=wizard.repo_details['hasWiki'],
                 has_downloads=wizard.repo_details['hasDownloads'],
                 has_issues=wizard.repo_details['hasIssues'])
+            self.reposRefresh()
 
 class GithubCredentialsWizardPage(QWizardPage):
     def __init__(self, parent=None):
