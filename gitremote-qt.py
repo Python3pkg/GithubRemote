@@ -37,6 +37,7 @@ class MainWidget(QMainWindow):
                 QIcon('images/minus.png'),
                 '&Remove Repo', self,
                 statusTip='Remove repo')
+        self.repoRemoveAction.triggered.connect(self.repoRemove)
 
         self.repoRefreshAction = QAction(
                 QIcon('images/refresh.png'),
@@ -189,12 +190,27 @@ class MainWidget(QMainWindow):
                 has_downloads=wizard.repo_details['hasDownloads'],
                 has_issues=wizard.repo_details['hasIssues'])
             self.reposRefresh()
+    
+    def repoRemove(self):
+        
+        row = self._selectedRepoRow()
+        name = self.reposTableWidget.item(row, 0).text()
+        dialog = RepoRemoveDialog(name)
+        if dialog.exec_():
+            GITHUB.get_user().get_repo(str(name)).delete()
+            self.reposRefresh()
 
     def _isARepoSelected(self):
         if len(self.reposTableWidget.selectedItems()) > 0:
             return True
         else:
             return False
+
+    def _selectedRepoRow(self):
+        selectedModelIndexes = \
+            self.reposTableWidget.selectionModel().selectedRows()
+        for index in selectedModelIndexes:
+            return index.row()
 
 class GithubCredentialsWizardPage(QWizardPage):
     def __init__(self, parent=None):
@@ -275,7 +291,6 @@ class userSignInWizard(QWizard):
 
         self.setPage(0, AccountTypeWizardPage())
         self.setPage(1, GithubCredentialsWizardPage())
-
 
 class RepoTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):
@@ -462,25 +477,58 @@ class repoAddDialog(QDialog):
         self.mainLayout.addWidget(buttonBox)
         self.setLayout(self.mainLayout)
 
-class repoRemoveDialog(QDialog):
-    def __init__(self, parent=None):
-        super(ScriptAddDialog, self).__init__(
+class RepoRemoveDialog(QDialog):
+    def __init__(self, name, parent=None):
+        super(RepoRemoveDialog, self).__init__(
             parent,
             windowTitle="Remove Repo")
+        
+        self.login = GITHUB.get_user().login
+        self.name = name
+
+        self.label = QLabel('''
+        <p>Are you sure?</p>
+
+        <p>This action <b>CANNOT</b> be undone.</p>
+        <p>This will delete the <b>{}/{}</b> repository, wiki, issues, and
+        comments permanently.</p>
+
+        <p>Please type in the name of the repository to confirm.</p>
+        '''.format(self.login, self.name))
+        self.label.setTextFormat(Qt.RichText)
+       
+        validator = QRegExpValidator(
+                QRegExp(r'{}/{}'.format(self.login, self.name)))
+        self.nameEdit = QLineEdit(textChanged=self.textChanged)
+        self.nameEdit.setValidator(validator)
 
         # Form
         self.form = QFormLayout()
+        self.form.addRow(self.label)
+        self.form.addRow(self.nameEdit)
         
         # ButtonBox
-        buttonBox = QDialogButtonBox(
+        self.buttonBox = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
             accepted=self.accept, rejected=self.reject)
         
         # Layout
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addLayout(self.form)
-        self.mainLayout.addWidget(buttonBox)
+        self.mainLayout.addWidget(self.buttonBox)
         self.setLayout(self.mainLayout)
+        
+        self.textChanged()
+
+    def textChanged(self):
+        
+        if self.nameEdit.validator().validate(self.nameEdit.text(), 0)[0] \
+                == QValidator.Acceptable:
+            b = True
+        else:
+            b = False
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(b)
+        
 
 def main():
     app = QApplication(sys.argv)
