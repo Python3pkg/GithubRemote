@@ -101,6 +101,7 @@ class MainWidget(QMainWindow):
                 itemSelectionChanged = self.actionsUpdate)
         self.reposTableWidget.setHorizontalHeaderLabels(
                 self.reposTableWidgetHeaders)
+        self.reposTableWidget.horizontalHeader().setStretchLastSection(True)
 
         # Layout
         self.setCentralWidget(self.reposTableWidget)
@@ -125,6 +126,7 @@ class MainWidget(QMainWindow):
         self.userLabel.setText(GITHUB.get_user().name)
         size = self.userLabel.sizeHint()
         self.userPushButton.setFixedSize(size.width() + 60, 48)
+        
     
     @waiting_effects
     def reposRefresh(self):
