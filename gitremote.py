@@ -46,10 +46,10 @@ def get_token():
             authentication = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST', code)
 
-            pickle.dump(authentication, f)
         except None:
             return None
 
+        pickle.dump(authentication, f)
         return authentication
 
 if __name__ == '__main__':
