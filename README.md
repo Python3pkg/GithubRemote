@@ -20,7 +20,6 @@ Access remote github repos
 * Bitbucket
 * better format for list of repos
 * Loggin wizard
-* Add repo wizard resize
 * command line
 
 ## Dependencies ##
