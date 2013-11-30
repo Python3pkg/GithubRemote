@@ -299,13 +299,14 @@ class RepoTypeWizardPage(QWizardPage):
             title="Select Account Type",
             subTitle="Select the type of Repo to create")
     
-        self.githubRadioButton = QRadioButton("Github Repo")
-        self.githubRadioButton.toggle()
+        self.githubRadioButton = QRadioButton('Github Repo')
 
         # Layout
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addWidget(self.githubRadioButton)
         self.setLayout(self.mainLayout)
+
+        self.githubRadioButton.toggle()
     
     def nextId(self):
         
@@ -374,7 +375,6 @@ class GithubRepoWizardPage(QWizardPage):
         self.form.addRow(moreButtonHBox)
         self.form.addRow(self.extension)
         
-        
         # Layout
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addLayout(self.form)
@@ -418,12 +418,13 @@ class GithubRepoWizardPage(QWizardPage):
         if self.moreButton.isChecked():
             self.moreButton.setText("Less")
             self.extension.show()
+            self.parent.resize(self.parent.sizeHint())
         else:
             self.moreButton.setText("More")
             self.extension.hide()
-
-        self.parent.resize(self.sizeHint())
-        self.resize(self.sizeHint())
+            size = self.sizeHint()
+            parent_size = self.parent.sizeHint()
+            self.parent.resize(parent_size.width(), size.height())
 
 class RepoAddWizard(QWizard):
 
