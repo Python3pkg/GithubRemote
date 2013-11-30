@@ -124,7 +124,7 @@ class MainWidget(QMainWindow):
         pixmap.loadFromData(data)
         self.userImageLabel.setPixmap(pixmap)
         self.userImageLabel.setFixedSize(32, 32)
-        self.userLabel.setText(GITHUB.get_user().name)
+        self.userLabel.setText(GITHUB.get_user().login)
         size = self.userLabel.sizeHint()
         self.userPushButton.setFixedSize(size.width() + 60, 48)
         
