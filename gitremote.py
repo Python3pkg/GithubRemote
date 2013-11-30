@@ -52,7 +52,6 @@ def get_token():
         except None:
             return None
 
-
 if __name__ == '__main__':
 
     get_token()
