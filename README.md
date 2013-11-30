@@ -36,7 +36,7 @@ Access remote github repos
 # python2
 sudo apt-get install python
 # pyqt4
-sudo apt-get install python-
+sudo apt-get install python-qt4
 # pip
 sudo apt-get install python-pip
 # PyGithub
