@@ -141,7 +141,11 @@ class MainWidget(QMainWindow):
                 description=wizard.repo_details['description'],
                 private=wizard.repo_details['private'],
                 auto_init=wizard.repo_details['init'],
-                gitignore_template=wizard.repo_details['gitignore'])
+                gitignore_template=wizard.repo_details['gitignore'],
+                homepage=wizard.repo_details['homepage'],
+                has_wiki=wizard.repo_details['hasWiki'],
+                has_downloads=wizard.repo_details['hasDownloads'],
+                has_issues=wizard.repo_details['hasIssues'])
 
 class GithubCredentialsWizardPage(QWizardPage):
     def __init__(self, parent=None):
@@ -253,36 +257,69 @@ class GithubRepoWizardPage(QWizardPage):
         
         self.parent = parent
         
+        # moreButton
+        self.moreButton = QPushButton(
+                "More",
+                checkable=True,
+                clicked=self.more)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        moreButtonHBox = QHBoxLayout()
+        moreButtonHBox.addWidget(spacer)
+        moreButtonHBox.addWidget(self.moreButton)
+
         #  LineEdits
         self.nameEdit = QLineEdit(textChanged=self.update)
         self.descriptionEdit = QLineEdit(textChanged=self.update)
-        self.privateCheckBox = QCheckBox(toggled=self.update)
+        self.homepageEdit = QLineEdit(textChanged=self.update)
+        
+        # CheckBox
+        self.privateCheckBox = QCheckBox(stateChanged=self.update)
         self.initCheckBox = QCheckBox(stateChanged=self.update)
+        self.hasWikiCheckBox = QCheckBox(stateChanged=self.update)
+        self.hasDownloadsCheckBox = QCheckBox(stateChanged=self.update)
+        self.hasIssuesCheckBox = QCheckBox(stateChanged=self.update)
+
         self.gitignoreComboBox = QComboBox(currentIndexChanged=self.update)
         self.gitignoreComboBox.addItem('None')
         for i in gitignore_types(GITHUB):
             self.gitignoreComboBox.addItem(i)
 
-        hbox = QHBoxLayout()
-        hbox.addWidget(QLabel(
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(QLabel(
             'Initialize this repository with a README and .gitignore'))
-        hbox.addWidget(self.initCheckBox)
+        hbox2.addWidget(self.initCheckBox)
 
-        # Form 
-        form = QFormLayout()
-        form.addRow("Name: ", self.nameEdit)
-        form.addRow("Description: ", self.descriptionEdit)
-        form.addRow('Private', self.privateCheckBox)
-        form.addRow(hbox)
-        form.addRow('Add .gitignore', self.gitignoreComboBox)
+        self.form_extension = QFormLayout()
+        self.form_extension.addRow("Homepage", self.homepageEdit)  
+        self.form_extension.addRow("Has wiki", self.hasWikiCheckBox)
+        self.form_extension.addRow("Has issues", self.hasIssuesCheckBox)
+        self.form_extension.addRow("Has downloads", self.hasDownloadsCheckBox)
+
+        # Extension
+        self.extension = QWidget()
+        self.extension.setLayout(self.form_extension)
+
+        # Form1
+        self.form = QFormLayout()
+        self.form.addRow("Name: ", self.nameEdit)
+        self.form.addRow("Description: ", self.descriptionEdit)
+        self.form.addRow('Private', self.privateCheckBox)
+        self.form.addRow(hbox2)
+        self.form.addRow('Add .gitignore', self.gitignoreComboBox)
+        self.form.addRow(moreButtonHBox)
+        self.form.addRow(self.extension)
+        
         
         # Layout
         self.mainLayout = QVBoxLayout()
-        self.mainLayout.addLayout(form)
+        self.mainLayout.addLayout(self.form)
         self.setLayout(self.mainLayout)
     
         if not GITHUB.get_user().plan:
             self.privateCheckBox.setEnabled(False)
+        
+        self.extension.hide()
 
     def update(self):
 
@@ -303,6 +340,26 @@ class GithubRepoWizardPage(QWizardPage):
                 True if self.initCheckBox.isChecked() else False
         self.parent.repo_details['gitignore'] = \
                 str(self.gitignoreComboBox.currentText())
+        self.parent.repo_details['homepage'] = \
+                str(self.homepageEdit.text())
+        self.parent.repo_details['hasIssues'] = \
+                True if self.hasIssuesCheckBox.isChecked() else False
+        self.parent.repo_details['hasDownloads'] = \
+                True if self.hasDownloadsCheckBox.isChecked() else False
+        self.parent.repo_details['hasWiki'] = \
+                True if self.hasWikiCheckBox.isChecked() else False
+
+    def more(self):
+            
+        if self.moreButton.isChecked():
+            self.moreButton.setText("Less")
+            self.extension.show()
+        else:
+            self.moreButton.setText("More")
+            self.extension.hide()
+
+        self.parent.resize(self.sizeHint())
+        self.resize(self.sizeHint())
 
 class RepoAddWizard(QWizard):
 
