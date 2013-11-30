@@ -5,6 +5,7 @@ from core import *
 import json
 import getpass
 import os
+import pickle
 
 PARSER = argparse.ArgumentParser(description="Control remote git repos")
 
