@@ -21,3 +21,24 @@ Access remote github repos
 * better format for list of repos
 * Loggin wizard
 * Add repo wizard resize
+* command line
+
+## Dependencies ##
+
+* python2
+* pyqt4
+* [PyGithub](https://github.com/jacquev6/PyGithub)
+    
+### Installing depedencies ###
+
+#### Ubuntu ####
+```sh
+# python2
+sudo apt-get install python
+# pyqt4
+sudo apt-get install python-
+# pip
+sudo apt-get install python-pip
+# PyGithub
+sudo pip install PyGithub
+```
