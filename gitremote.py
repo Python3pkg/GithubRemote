@@ -39,7 +39,7 @@ def get_token():
             authenticaiton = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST')
         except Require2FAError:
-            pass
+            return authentication
     
         try:
             code = raw_input("Enter code: ")
