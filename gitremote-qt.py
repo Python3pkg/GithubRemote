@@ -180,15 +180,15 @@ class MainWidget(QMainWindow):
         wizard = RepoAddWizard(self)
         if wizard.exec_():
             GITHUB.get_user().create_repo(
-                wizard.repo_details['name'],
-                description=wizard.repo_details['description'],
-                private=wizard.repo_details['private'],
-                auto_init=wizard.repo_details['init'],
-                gitignore_template=wizard.repo_details['gitignore'],
-                homepage=wizard.repo_details['homepage'],
-                has_wiki=wizard.repo_details['hasWiki'],
-                has_downloads=wizard.repo_details['hasDownloads'],
-                has_issues=wizard.repo_details['hasIssues'])
+                str(wizard.field('name').toString()),
+                description=str(wizard.field('description').toString()),
+                private=bool(wizard.field('private').toBool()),
+                auto_init=bool(wizard.field('auto_init').toBool()),
+                gitignore_template=str(wizard.field('gitignore').toString()),
+                homepage=str(wizard.field('homepage').toString()),
+                has_wiki=bool(wizard.field('has_wiki').toBool()),
+                has_downloads=bool(wizard.field('has_downloads').toBool()),
+                has_issues=bool(wizard.field('has_issues').toBool()))
             self.reposRefresh()
     
     def repoRemove(self):
@@ -380,6 +380,20 @@ class GithubRepoWizardPage(QWizardPage):
         self.mainLayout.addLayout(self.form)
         self.setLayout(self.mainLayout)
     
+        # Fields
+        self.registerField('name*', self.nameEdit)
+        self.registerField('description', self.descriptionEdit)
+        self.registerField('private', self.privateCheckBox)
+        self.registerField('auto_init', self.initCheckBox)
+        self.registerField('gitignore', self.gitignoreComboBox, 'currentText')
+        self.registerField('homepage', self.homepageEdit)
+        self.registerField('has_issues', self.hasIssuesCheckBox)
+        self.registerField('has_downloads', self.hasDownloadsCheckBox)
+        self.registerField('has_wiki', self.hasWikiCheckBox)
+        
+        self.hasWikiCheckBox.toggle()
+        self.hasDownloadsCheckBox.toggle()
+        self.hasIssuesCheckBox.toggle()
         if not GITHUB.get_user().plan:
             self.privateCheckBox.setEnabled(False)
         
@@ -393,25 +407,6 @@ class GithubRepoWizardPage(QWizardPage):
             self.gitignoreComboBox.setEnabled(True)
         else:
             self.gitignoreComboBox.setEnabled(False)
-
-        self.parent.repo_details['name'] = \
-                str(self.nameEdit.text())
-        self.parent.repo_details['description'] = \
-                str(self.descriptionEdit.text())
-        self.parent.repo_details['private'] = \
-                True if self.privateCheckBox.isChecked() else False
-        self.parent.repo_details['init'] = \
-                True if self.initCheckBox.isChecked() else False
-        self.parent.repo_details['gitignore'] = \
-                str(self.gitignoreComboBox.currentText())
-        self.parent.repo_details['homepage'] = \
-                str(self.homepageEdit.text())
-        self.parent.repo_details['hasIssues'] = \
-                True if self.hasIssuesCheckBox.isChecked() else False
-        self.parent.repo_details['hasDownloads'] = \
-                True if self.hasDownloadsCheckBox.isChecked() else False
-        self.parent.repo_details['hasWiki'] = \
-                True if self.hasWikiCheckBox.isChecked() else False
 
     def more(self):
             
@@ -433,8 +428,6 @@ class RepoAddWizard(QWizard):
                 parent,
                 windowTitle="Add Repo")
         
-        self.repo_details = {}
-
         self.setPage(0, RepoTypeWizardPage(self))
         self.setPage(1, GithubRepoWizardPage(self))
 
