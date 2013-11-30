@@ -38,11 +38,10 @@ def get_token():
         try:
             authenticaiton = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST')
-        except Require2FAError:
-            pass
-        else:
             pickle.dump(authentication, f)
             return authentication
+        except Require2FAError:
+            pass
     
         try:
             code = raw_input("Enter code: ")
