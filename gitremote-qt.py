@@ -54,8 +54,20 @@ class MainWidget(QMainWindow):
                 statusTip='Sign Out')
         
         self.userLabel = QLabel(self)
-        self.userAction = QAction('', self)
-        self.userAction.setCheckable(False)
+        self.userLabel.setScaledContents(True)
+        self.userLabel.setSizePolicy(
+                QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+        self.userImageLabel = QLabel(self)
+        self.userImageLabel.setScaledContents(True)
+        self.userLabel.setSizePolicy(
+                QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        self.userPushButton = QPushButton(self)
+        self.userPushButton.setSizePolicy(
+                QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.userLabel)
+        hbox.addWidget(self.userImageLabel)
+        self.userPushButton.setLayout(hbox)
 
         # ToolBar
         self.toolBar = self.addToolBar('Main')
@@ -67,8 +79,7 @@ class MainWidget(QMainWindow):
         self.toolBar.addAction(self.repoRemoveAction)
         self.toolBar.addAction(self.repoRefreshAction)
         self.toolBar.addWidget(spacer)
-        self.toolBar.addWidget(self.userLabel)
-        self.toolBar.addAction(self.userAction)
+        self.toolBar.addWidget(self.userPushButton)
 
         # Menu
         menuBar = self.menuBar()
@@ -109,9 +120,11 @@ class MainWidget(QMainWindow):
         data = urllib.urlopen(url).read()
         pixmap = QPixmap()
         pixmap.loadFromData(data)
-        self.userAction.setIcon(QIcon(pixmap))
-        name = GITHUB.get_user().name
-        self.userLabel.setText(name)
+        self.userImageLabel.setPixmap(pixmap)
+        self.userImageLabel.setFixedSize(32, 32)
+        self.userLabel.setText(GITHUB.get_user().name)
+        size = self.userLabel.sizeHint()
+        self.userPushButton.setFixedSize(size.width() + 60, 48)
     
     @waiting_effects
     def reposRefresh(self):
