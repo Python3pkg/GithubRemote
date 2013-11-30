@@ -92,6 +92,7 @@ class MainWidget(QMainWindow):
         self.authenticate()
         self.reposRefresh()
         self.updateImage()
+        self.actionsUpdate()
         
     def updateImage(self):
 
@@ -133,8 +134,17 @@ class MainWidget(QMainWindow):
             GITHUB = None
 
     def actionsUpdate(self):
-        """ TODO """
-        pass
+        if GITHUB is None:
+            self.repoAddAction.setEnabled(False)
+            self.repoRemoveAction.setEnabled(False)
+            self.repoRefreshAction.setEnabled(False)
+        else:
+            self.repoAddAction.setEnabled(True)
+            self.repoRefreshAction.setEnabled(True)
+            if self._isARepoSelected():
+                self.repoRemoveAction.setEnabled(True)
+            else:
+                self.repoRemoveAction.setEnabled(False)
 
     def userSignIn(self):
         wizard = userSignInWizard(self)
@@ -155,6 +165,12 @@ class MainWidget(QMainWindow):
                 has_downloads=wizard.repo_details['hasDownloads'],
                 has_issues=wizard.repo_details['hasIssues'])
             self.reposRefresh()
+
+    def _isARepoSelected(self):
+        if len(self.reposTableWidget.selectedItems()) > 0:
+            return True
+        else:
+            return False
 
 class GithubCredentialsWizardPage(QWizardPage):
     def __init__(self, parent=None):
