@@ -55,6 +55,7 @@ class MainWidget(QMainWindow):
                 'User Sign&out', self,
                 statusTip='Sign Out')
         
+        # userPushButton
         self.userLabel = QLabel(self)
         self.userLabel.setScaledContents(True)
         self.userLabel.setSizePolicy(
@@ -92,6 +93,10 @@ class MainWidget(QMainWindow):
         actionMenu.addAction(self.repoAddAction)
         actionMenu.addAction(self.repoRemoveAction)
         actionMenu.addAction(self.repoRefreshAction)
+
+        # StatusBar
+        statusBar = self.statusBar()
+        self.setStatusBar(statusBar)
 
         # reposTableWidget
         self.reposTableWidgetHeaders = ["Name", "Description"]
