@@ -172,7 +172,7 @@ class MainWidget(QMainWindow):
                 self.repoRemoveAction.setEnabled(False)
 
     def userSignIn(self):
-        wizard = userSignInWizard(self)
+        wizard = UserSignInWizard(self)
         if wizard.exec_():
             pass
     
@@ -347,16 +347,35 @@ class Github2FAWizardPage(QWizardPage):
         # Fields
         self.registerField('2fa_code*', self.codeEdit)
 
-class userSignInWizard(QWizard):
+class UserSummaryWizardPage(QWizardPage):
+    def __init__(self, parent=None):
+        super(UserSummaryWizardPage, self).__init__(
+                parent,
+                title="Summary",
+                subTitle="Summary of new user account")
+        
+        self.usernameLabel = QLabel()
+
+        self.form = QFormLayout()
+        self.form.addRow("username: ", self.usernameLabel)
+
+        self.setLayout(self.form)
+    
+    def initializePage(self):
+         
+        self.usernameLabel.setText(self.field('username').toString())
+
+class UserSignInWizard(QWizard):
 
     def __init__(self, parent=None):
-        super(userSignInWizard, self).__init__(
+        super(UserSignInWizard, self).__init__(
                 parent,
                 windowTitle="Sign In")
 
         self.setPage(0, AccountTypeWizardPage())
         self.setPage(1, GithubCredentialsWizardPage())
         self.setPage(2, Github2FAWizardPage())
+        self.setPage(3, UserSummaryWizardPage())
 
 class RepoTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):
