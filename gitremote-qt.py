@@ -281,11 +281,11 @@ class GithubCredentialsWizardPage(QWizardPage):
             self.tokenEdit.setEnabled(True)
 
     def nextId(self):
-
+        
         if self.userPassRadioButton.isChecked():
-            return 
+            return 2 # TODO
         elif self.tokenRadioButton.isChecked():
-            return 
+            return 2 # TODO
     
     def isComplete(self):
         
@@ -329,6 +329,24 @@ class AccountTypeWizardPage(QWizardPage):
         if self.githubRadioButton.isChecked():
             return 1
 
+class Github2FAWizardPage(QWizardPage):
+    def __init__(self, parent=None):
+        super(Github2FAWizardPage, self).__init__(
+                parent,
+                title="Two-Factor Authentication",
+                subTitle="Enter required authentication code")
+        
+        self.codeEdit = QLineEdit()
+        self.codeEdit.setValidator(QRegExpValidator(QRegExp(r'[\d]+')))
+
+        self.form = QFormLayout()
+        self.form.addRow("Code: ", self.codeEdit)
+
+        self.setLayout(self.form)
+
+        # Fields
+        self.registerField('2fa_code*', self.codeEdit)
+
 class userSignInWizard(QWizard):
 
     def __init__(self, parent=None):
@@ -338,6 +356,7 @@ class userSignInWizard(QWizard):
 
         self.setPage(0, AccountTypeWizardPage())
         self.setPage(1, GithubCredentialsWizardPage())
+        self.setPage(2, Github2FAWizardPage())
 
 class RepoTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):
@@ -382,6 +401,8 @@ class GithubRepoWizardPage(QWizardPage):
 
         #  LineEdits
         self.nameEdit = QLineEdit(textChanged=self.update)
+        self.nameEdit.setValidator(QRegExpValidator(
+                QRegExp(r'[a-zA-Z0-9-_]+[a-zA-Z0-9-_]*')))
         self.descriptionEdit = QLineEdit(textChanged=self.update)
         self.homepageEdit = QLineEdit(textChanged=self.update)
         
