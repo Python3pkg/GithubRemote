@@ -24,7 +24,7 @@ class MainWidget(QMainWindow):
         super(MainWidget, self).__init__(
                 parent,
                 windowTitle='GitRemote',
-                #windowIcon=QIcon('images/GitRemote.png'),
+                windowIcon=QIcon('images/git.png'),
                 geometry=QRect(300, 300, 600, 372))
 
         self.repoAddAction = QAction(
@@ -569,7 +569,6 @@ class RepoRemoveDialog(QDialog):
         else:
             b = False
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(b)
-        
 
 def main():
     app = QApplication(sys.argv)
