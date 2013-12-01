@@ -30,6 +30,8 @@ class MainWidget(QMainWindow):
                 windowTitle='GitRemote',
                 windowIcon=QIcon('images/git.png'),
                 geometry=QRect(300, 300, 600, 372))
+       
+        # Actions
 
         self.repoAddAction = QAction(
                 QIcon('images/plus_48.png'),
@@ -58,24 +60,31 @@ class MainWidget(QMainWindow):
                 'User Sign&out', self,
                 statusTip='Sign Out')
         
-        # userPushButton
+        # userPushButton - Displays the current active username and 
+        # image on the top right of the toolbar. TODO Attach a menu
+        # of all logged in users.
+
         self.userLabel = QLabel(self)
         self.userLabel.setScaledContents(True)
         self.userLabel.setSizePolicy(
                 QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+
         self.userImageLabel = QLabel(self)
         self.userImageLabel.setScaledContents(True)
         self.userLabel.setSizePolicy(
                 QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+
         self.userPushButton = QPushButton(self)
         self.userPushButton.setSizePolicy(
                 QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+
         hbox = QHBoxLayout()
         hbox.addWidget(self.userLabel)
         hbox.addWidget(self.userImageLabel)
         self.userPushButton.setLayout(hbox)
 
         # ToolBar
+
         self.toolBar = self.addToolBar('Main')
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
@@ -88,6 +97,7 @@ class MainWidget(QMainWindow):
         self.toolBar.addWidget(self.userPushButton)
 
         # Menu
+
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('&File')
         actionMenu = menuBar.addMenu('&Action')
@@ -98,10 +108,12 @@ class MainWidget(QMainWindow):
         actionMenu.addAction(self.repoRefreshAction)
 
         # StatusBar
+
         statusBar = self.statusBar()
         self.setStatusBar(statusBar)
 
-        # reposTableWidget
+        # reposTableWidget - Displays a list of the users repositories
+
         self.reposTableWidgetHeaders = ["Name", "Description"]
         self.reposTableWidget = QTableWidget(0,
                 len(self.reposTableWidgetHeaders),
@@ -114,10 +126,13 @@ class MainWidget(QMainWindow):
         self.reposTableWidget.horizontalHeader().setStretchLastSection(True)
 
         # Layout
+
         self.setCentralWidget(self.reposTableWidget)
         self.actionsUpdate()
         self.show()
         
+        # Update
+
         self.authenticate()
         self.reposRefresh()
         self.updateImage()
@@ -125,12 +140,10 @@ class MainWidget(QMainWindow):
         
     def updateImage(self):
 
-        if not GITHUB:
-            return
         try:
             url = GITHUB.get_user().avatar_url
-        except GithubException:
-            return
+        except GithubException, AttributeError: 
+            return 
         data = urllib.urlopen(url).read()
         pixmap = QPixmap()
         pixmap.loadFromData(data)
@@ -138,17 +151,16 @@ class MainWidget(QMainWindow):
         self.userImageLabel.setFixedSize(32, 32)
         self.userLabel.setText(GITHUB.get_user().login)
         size = self.userLabel.sizeHint()
+        # TODO - Remove magic numbers
         self.userPushButton.setFixedSize(size.width() + 60, 48)
     
     @waiting_effects
     def reposRefresh(self):
 
-        if not GITHUB:
-            return
         try:
             repos = GITHUB.get_user().get_repos()
             self.reposTableWidget.setRowCount(GITHUB.get_user().public_repos)
-        except GithubException:
+        except GithubException, AttributeError:
             return
         for row, repo in enumerate(repos):
             nameTableWidgetItem = QTableWidgetItem(str(repo.name))
@@ -171,6 +183,7 @@ class MainWidget(QMainWindow):
             GITHUB = None
     
     def actionsUpdate(self):
+        # TODO disable if no user is logged in
         if GITHUB is None:
             self.repoAddAction.setEnabled(False)
             self.repoRemoveAction.setEnabled(False)
@@ -219,12 +232,15 @@ class MainWidget(QMainWindow):
             self.reposRefresh()
 
     def _isARepoSelected(self):
-            if len(self.reposTableWidget.selectedItems()) > 0:
-                return True
-            else:
-                return False
+        """ Return True if a repo is selected else False """
+        if len(self.reposTableWidget.selectedItems()) > 0:
+            return True
+        else:
+            return False
 
     def _selectedRepoRow(self):
+        """ Return the currently select repo """
+        # TODO - figure out what happens if no repo is selected
         selectedModelIndexes = \
             self.reposTableWidget.selectionModel().selectedRows()
         for index in selectedModelIndexes:
@@ -236,16 +252,20 @@ class GithubCredentialsWizardPage(QWizardPage):
             parent,
             title="Credentials",
             subTitle="Enter your username/password or token")
-        
+       
+        # Radio Buttons 
+
         self.userPassRadioButton = QRadioButton()
         self.userPassRadioButton.toggled.connect(self.changeMode)
         self.userPassRadioButton.toggled.connect(self.completeChanged.emit)
+
         self.tokenRadioButton = QRadioButton()
         self.tokenRadioButton.toggled.connect(self.changeMode)
         self.tokenRadioButton.toggled.connect(self.completeChanged.emit)
 
         #  LineEdits
-
+        
+        # usernameEdit
         self.usernameEdit = QLineEdit(
                 textChanged=self.completeChanged.emit)
         # Username may only contain alphanumeric characters or dash
@@ -259,15 +279,17 @@ class GithubCredentialsWizardPage(QWizardPage):
         self.passwordEdit.setValidator(
             QRegExpValidator(QRegExp('.+')))
         self.passwordEdit.setEchoMode(QLineEdit.Password)
-
-        # token may only contain alphanumeric characters
+        
+        # tokenEdit
         self.tokenEdit = QLineEdit(
                 textChanged=self.completeChanged.emit)
+        # token may only contain alphanumeric characters
         self.tokenEdit.setValidator(
             QRegExpValidator(QRegExp('[A-Za-z\d]+')))
         self.tokenEdit.setEchoMode(QLineEdit.Password)
       
         # Form
+
         form = QFormLayout()
         form.addRow("<b>username/password</b>", self.userPassRadioButton)
         form.addRow("username: ", self.usernameEdit)
@@ -276,11 +298,13 @@ class GithubCredentialsWizardPage(QWizardPage):
         form.addRow("token: ", self.tokenEdit)
         
         # Layout
+
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addLayout(form)
         self.setLayout(self.mainLayout)
         
         # Fields
+
         self.registerField("username", self.usernameEdit)
         self.registerField("password", self.passwordEdit)
         self.registerField("token", self.tokenEdit)
@@ -303,9 +327,9 @@ class GithubCredentialsWizardPage(QWizardPage):
     def nextId(self):
         
         if self.require_2fa:
-            return 2
+            return 2 # TODO remove magic number
         else:
-            return 3
+            return 3 # TODO remove magic number
     
     def isComplete(self):
         
@@ -332,6 +356,8 @@ class GithubCredentialsWizardPage(QWizardPage):
     @waiting_effects
     def validatePage(self):
         
+        # TODO - clean this up
+
         if self.userPassRadioButton.isChecked():
             username = str(self.field('username').toString())
             password = str(self.field('password').toString())
@@ -365,11 +391,14 @@ class AccountTypeWizardPage(QWizardPage):
             parent,
             title="Select Account Type",
             subTitle="Select the type of account to create")
-    
+        
+        # Radio Buttons
+
         self.githubRadioButton = QRadioButton("Github account")
         self.githubRadioButton.toggle()
 
         # Layout
+
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addWidget(self.githubRadioButton)
         self.setLayout(self.mainLayout)
@@ -377,7 +406,7 @@ class AccountTypeWizardPage(QWizardPage):
     def nextId(self):
         
         if self.githubRadioButton.isChecked():
-            return 1
+            return 1 # TODO remove magic number
 
 class Github2FAWizardPage(QWizardPage):
     def __init__(self, parent=None):
@@ -385,21 +414,29 @@ class Github2FAWizardPage(QWizardPage):
                 parent,
                 title="Two-Factor Authentication",
                 subTitle="Enter required authentication code")
-        
+       
+        # LineEdits
+
         self.codeEdit = QLineEdit()
+        # codeEdit may only contain 1 or more digits
         self.codeEdit.setValidator(QRegExpValidator(QRegExp(r'[\d]+')))
+        
+        # Form
 
         self.form = QFormLayout()
         self.form.addRow("Code: ", self.codeEdit)
+        
+        # Layout
 
         self.setLayout(self.form)
 
         # Fields
+
         self.registerField('2fa_code*', self.codeEdit)
 
     def nextId(self):
         
-        return 3
+        return 3 # TODO remove magic number
 
     @waiting_effects
     def validatePage(self):
@@ -407,12 +444,14 @@ class Github2FAWizardPage(QWizardPage):
         username = str(self.field('username').toString())
         password = str(self.field('password').toString())
         code = int(self.field('2fa_code').toString())
-        try: 
+
+        try: # to use 2fa code
             authentication = request_token(
                     username, password, ['repo'], 'QT TEST', code) 
         except AuthenticationError:
-            self.wizard().back()
+            self.wizard().back() # start over TODO make sure this works
             return False
+
         self.setField('token', str(authentication.token))
         return True
 
@@ -423,12 +462,18 @@ class UserSummaryWizardPage(QWizardPage):
                 title="Summary",
                 subTitle="Summary of new user account")
         
+        # labels
+
         self.usernameLabel = QLabel()
         self.tokenLabel = QLabel()
+        
+        # form
 
         self.form = QFormLayout()
         self.form.addRow("username: ", self.usernameLabel)
         self.form.addRow("token: ", self.tokenLabel)
+        
+        # layout
 
         self.setLayout(self.form)
     
@@ -443,7 +488,8 @@ class UserSignInWizard(QWizard):
         super(UserSignInWizard, self).__init__(
                 parent,
                 windowTitle="Sign In")
-
+        
+        # TODO - remove magic numbers
         self.setPage(0, AccountTypeWizardPage())
         self.setPage(1, GithubCredentialsWizardPage())
         self.setPage(2, Github2FAWizardPage())
@@ -456,14 +502,19 @@ class RepoTypeWizardPage(QWizardPage):
             title="Select Account Type",
             subTitle="Select the type of Repo to create")
     
+        # RadioButtons
+
         self.githubRadioButton = QRadioButton('Github Repo')
 
         # Layout
+
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addWidget(self.githubRadioButton)
         self.setLayout(self.mainLayout)
+        
+        # Setup
 
-        self.githubRadioButton.toggle()
+        self.githubRadioButton.toggle() 
     
     def nextId(self):
         
@@ -477,9 +528,8 @@ class GithubRepoWizardPage(QWizardPage):
             title="Github Repository",
             subTitle="Configure the new Github repository")
         
-        self.parent = parent
-        
         # moreButton
+
         self.moreButton = QPushButton(
                 "More",
                 checkable=True,
@@ -491,6 +541,7 @@ class GithubRepoWizardPage(QWizardPage):
         moreButtonHBox.addWidget(self.moreButton)
 
         #  LineEdits
+
         self.nameEdit = QLineEdit(textChanged=self.update)
         self.nameEdit.setValidator(QRegExpValidator(
                 QRegExp(r'[a-zA-Z0-9-_]+[a-zA-Z0-9-_]*')))
@@ -498,6 +549,7 @@ class GithubRepoWizardPage(QWizardPage):
         self.homepageEdit = QLineEdit(textChanged=self.update)
         
         # CheckBox
+
         self.privateCheckBox = QCheckBox(stateChanged=self.update)
         self.initCheckBox = QCheckBox(stateChanged=self.update)
         self.hasWikiCheckBox = QCheckBox(stateChanged=self.update)
@@ -572,13 +624,13 @@ class GithubRepoWizardPage(QWizardPage):
         if self.moreButton.isChecked():
             self.moreButton.setText("Less")
             self.extension.show()
-            self.parent.resize(self.parent.sizeHint())
+            self.wizard().resize(self.wizard().sizeHint())
         else:
             self.moreButton.setText("More")
             self.extension.hide()
             size = self.sizeHint()
-            parent_size = self.parent.sizeHint()
-            self.parent.resize(parent_size.width(), size.height())
+            wizard_size = self.wizard().sizeHint()
+            self.wizard().resize(wizard_size.width(), size.height())
 
 class RepoAddWizard(QWizard):
 
@@ -589,46 +641,6 @@ class RepoAddWizard(QWizard):
         
         self.setPage(0, RepoTypeWizardPage(self))
         self.setPage(1, GithubRepoWizardPage(self))
-
-class user2FADialog(QDialog):
-    def __init__(self, parent=None):
-        super(ScriptAddDialog, self).__init__(
-            parent,
-            windowTitle="2FA Required")
-
-        # Form
-        self.form = QFormLayout()
-        
-        # ButtonBox
-        buttonBox = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
-            accepted=self.accept, rejected=self.reject)
-        
-        # Layout
-        self.mainLayout = QVBoxLayout()
-        self.mainLayout.addLayout(self.form)
-        self.mainLayout.addWidget(buttonBox)
-        self.setLayout(self.mainLayout)
-
-class repoAddDialog(QDialog):
-    def __init__(self, parent=None):
-        super(ScriptAddDialog, self).__init__(
-            parent,
-            windowTitle="Add Repo")
-
-        # Form
-        self.form = QFormLayout()
-        
-        # ButtonBox
-        buttonBox = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
-            accepted=self.accept, rejected=self.reject)
-        
-        # Layout
-        self.mainLayout = QVBoxLayout()
-        self.mainLayout.addLayout(self.form)
-        self.mainLayout.addWidget(buttonBox)
-        self.setLayout(self.mainLayout)
 
 class RepoRemoveDialog(QDialog):
     def __init__(self, name, parent=None):
