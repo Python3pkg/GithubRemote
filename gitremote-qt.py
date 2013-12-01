@@ -201,10 +201,10 @@ class MainWidget(QMainWindow):
             self.reposRefresh()
 
     def _isARepoSelected(self):
-        if len(self.reposTableWidget.selectedItems()) > 0:
-            return True
-        else:
-            return False
+            if len(self.reposTableWidget.selectedItems()) > 0:
+                return True
+            else:
+                return False
 
     def _selectedRepoRow(self):
         selectedModelIndexes = \
@@ -219,14 +219,34 @@ class GithubCredentialsWizardPage(QWizardPage):
             title="Credentials",
             subTitle="Enter your username/password or token")
         
-        self.userPassRadioButton = QRadioButton(toggled=self.changeMode)
-        self.tokenRadioButton = QRadioButton(toggled=self.changeMode)
+        self.userPassRadioButton = QRadioButton()
+        self.userPassRadioButton.toggled.connect(self.changeMode)
+        self.userPassRadioButton.toggled.connect(self.completeChanged.emit)
+        self.tokenRadioButton = QRadioButton()
+        self.tokenRadioButton.toggled.connect(self.changeMode)
+        self.tokenRadioButton.toggled.connect(self.completeChanged.emit)
 
         #  LineEdits
-        self.usernameEdit = QLineEdit()
-        self.passwordEdit = QLineEdit()
-        self.tokenEdit    = QLineEdit()
+
+        self.usernameEdit = QLineEdit(
+                textChanged=self.completeChanged.emit)
+        # Username may only contain alphanumeric characters or dash
+        # and cannot begin with a dash
+        self.usernameEdit.setValidator(
+            QRegExpValidator(QRegExp('[A-Za-z\d]+[A-Za-z\d-]+')))
+
+        # passwordEdit
+        self.passwordEdit = QLineEdit(
+                textChanged=self.completeChanged.emit)
+        self.passwordEdit.setValidator(
+            QRegExpValidator(QRegExp('.+')))
         self.passwordEdit.setEchoMode(QLineEdit.Password)
+
+        # token may only contain alphanumeric characters
+        self.tokenEdit = QLineEdit(
+                textChanged=self.completeChanged.emit)
+        self.tokenEdit.setValidator(
+            QRegExpValidator(QRegExp('[A-Za-z\d]+')))
         self.tokenEdit.setEchoMode(QLineEdit.Password)
       
         # Form
@@ -242,6 +262,11 @@ class GithubCredentialsWizardPage(QWizardPage):
         self.mainLayout.addLayout(form)
         self.setLayout(self.mainLayout)
         
+        # Fields
+        self.registerField("username", self.usernameEdit)
+        self.registerField("password", self.passwordEdit)
+        self.registerField("token", self.tokenEdit)
+
         self.userPassRadioButton.toggle()
 
     def changeMode(self):
@@ -261,6 +286,28 @@ class GithubCredentialsWizardPage(QWizardPage):
             return 
         elif self.tokenRadioButton.isChecked():
             return 
+    
+    def isComplete(self):
+        
+        if self.userPassRadioButton.isChecked():
+            usernameValidator = self.usernameEdit.validator()
+            usernameText = self.usernameEdit.text()
+            usernameState = usernameValidator.validate(usernameText, 0)[0]
+            passwordValidator = self.passwordEdit.validator()
+            passwordText = self.passwordEdit.text()
+            passwordState = passwordValidator.validate(passwordText, 0)[0]
+            if usernameState == QValidator.Acceptable and \
+                    passwordState == QValidator.Acceptable:
+                return True
+
+        elif self.tokenRadioButton.isChecked():
+            tokenValidator = self.tokenEdit.validator()
+            tokenText = self.tokenEdit.text()
+            tokenState = tokenValidator.validate(tokenText, 0)[0]
+            if tokenState == QValidator.Acceptable:
+                return True
+
+        return False
 
 class AccountTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):
