@@ -44,6 +44,19 @@ def request_token(
     except KeyError:
         raise AuthenticationError()
 
+def store_token(file_path, token):
+    
+    with open(file_path, 'w+') as f:
+        json.dump({'token':token}, f)
+
+def load_token(file_path):
+
+    with open(file_path, 'r') as f:
+        try: 
+            return json.load(f)['token']
+        except KeyError:
+            return None
+
 def gitignore_types(github):
     for i in github.get_user('github')\
                    .get_repo('gitignore')\

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
 from github import Github
+from github.GithubException import *
+from github.Authorization import Authorization
 from core import *
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
@@ -10,6 +12,7 @@ import pickle
 import urllib
 
 GITHUB = None
+TOKEN_PATH = './token.json'
 
 def waiting_effects(function):
     def new_function(self):
@@ -124,7 +127,10 @@ class MainWidget(QMainWindow):
 
         if not GITHUB:
             return
-        url = GITHUB.get_user().avatar_url
+        try:
+            url = GITHUB.get_user().avatar_url
+        except GithubException:
+            return
         data = urllib.urlopen(url).read()
         pixmap = QPixmap()
         pixmap.loadFromData(data)
@@ -139,8 +145,11 @@ class MainWidget(QMainWindow):
 
         if not GITHUB:
             return
-        repos = GITHUB.get_user().get_repos()
-        self.reposTableWidget.setRowCount(GITHUB.get_user().public_repos)
+        try:
+            repos = GITHUB.get_user().get_repos()
+            self.reposTableWidget.setRowCount(GITHUB.get_user().public_repos)
+        except GithubException:
+            return
         for row, repo in enumerate(repos):
             nameTableWidgetItem = QTableWidgetItem(str(repo.name))
             descTableWidgetItem = QTableWidgetItem(str(repo.description))
@@ -156,10 +165,8 @@ class MainWidget(QMainWindow):
         global GITHUB
 
         try:
-            f = open('authentication.pickle', 'r')
-            authentication = pickle.load(f)
-            GITHUB = Github(authentication.token)
-            f.close()
+            token = load_token(TOKEN_PATH) 
+            GITHUB = Github(token)
         except IOError, EOFError:
             GITHUB = None
     
@@ -179,7 +186,13 @@ class MainWidget(QMainWindow):
     def userSignIn(self):
         wizard = UserSignInWizard(self)
         if wizard.exec_():
-            pass
+            username = str(wizard.field('username').toString())
+            token = str(wizard.field('token').toString())
+            store_token(TOKEN_PATH, token)
+            self.authenticate()
+            self.reposRefresh()
+            self.updateImage()
+            self.actionsUpdate()
     
     def repoAdd(self):
         wizard = RepoAddWizard(self)
@@ -320,8 +333,8 @@ class GithubCredentialsWizardPage(QWizardPage):
     def validatePage(self):
         
         if self.userPassRadioButton.isChecked():
-            username = self.field('username').toString()
-            password = self.field('password').toString()
+            username = str(self.field('username').toString())
+            password = str(self.field('password').toString())
             try: 
                 authentication = request_token(username, password, ['repo'], 'QT TEST') 
             except Require2FAError:
@@ -330,18 +343,20 @@ class GithubCredentialsWizardPage(QWizardPage):
             except AuthenticationError:
                 self.require_2fa = False
                 return False
-            else:
-                self.require_2fa = False
-                return True
+            self.setField('token', str(authentication.token))
+            self.require_2fa = False
+            return True
         elif self.tokenRadioButton.isChecked():
-            token = self.field('token').toString()
+            token = str(self.field('token').toString())
             try:
                 self.setField('username', Github(token).get_user().login)
             except BadCredentialsException:
                 return False
             else:
+                self.require_2fa = False
                 return True 
         else:
+            self.require_2fa = False
             return False
 
 class AccountTypeWizardPage(QWizardPage):
@@ -382,6 +397,25 @@ class Github2FAWizardPage(QWizardPage):
         # Fields
         self.registerField('2fa_code*', self.codeEdit)
 
+    def nextId(self):
+        
+        return 3
+
+    @waiting_effects
+    def validatePage(self):
+
+        username = str(self.field('username').toString())
+        password = str(self.field('password').toString())
+        code = int(self.field('2fa_code').toString())
+        try: 
+            authentication = request_token(
+                    username, password, ['repo'], 'QT TEST', code) 
+        except AuthenticationError:
+            self.wizard().back()
+            return False
+        self.setField('token', str(authentication.token))
+        return True
+
 class UserSummaryWizardPage(QWizardPage):
     def __init__(self, parent=None):
         super(UserSummaryWizardPage, self).__init__(
@@ -390,15 +424,18 @@ class UserSummaryWizardPage(QWizardPage):
                 subTitle="Summary of new user account")
         
         self.usernameLabel = QLabel()
+        self.tokenLabel = QLabel()
 
         self.form = QFormLayout()
         self.form.addRow("username: ", self.usernameLabel)
+        self.form.addRow("token: ", self.tokenLabel)
 
         self.setLayout(self.form)
     
     def initializePage(self):
          
         self.usernameLabel.setText(self.field('username').toString())
+        self.tokenLabel.setText(self.field('token').toString())
 
 class UserSignInWizard(QWizard):
 

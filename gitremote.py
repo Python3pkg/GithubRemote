@@ -5,7 +5,6 @@ from core import *
 import json
 import getpass
 import os
-import pickle
 
 PARSER = argparse.ArgumentParser(description="Control remote git repos")
 
@@ -38,7 +37,6 @@ def get_token():
         try:
             authentication = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST')
-            pickle.dump(authentication, f)
             return authentication
         except Require2FAError:
             pass
@@ -47,7 +45,6 @@ def get_token():
             code = raw_input("Enter code: ")
             authentication = request_token(
                     ARGS.username, ARGS.password, ['repo'], 'TESTTEST', code)
-            pickle.dump(authentication, f)
             return authentication
         except None:
             return None
