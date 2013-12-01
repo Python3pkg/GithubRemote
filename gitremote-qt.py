@@ -14,8 +14,9 @@ GITHUB = None
 def waiting_effects(function):
     def new_function(self):
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
-        function(self)
+        result = function(self)
         QApplication.restoreOverrideCursor()
+        return result
     return new_function
 
 class MainWidget(QMainWindow):
@@ -127,7 +128,6 @@ class MainWidget(QMainWindow):
         self.userLabel.setText(GITHUB.get_user().login)
         size = self.userLabel.sizeHint()
         self.userPushButton.setFixedSize(size.width() + 60, 48)
-        
     
     @waiting_effects
     def reposRefresh(self):
@@ -269,6 +269,8 @@ class GithubCredentialsWizardPage(QWizardPage):
 
         self.userPassRadioButton.toggle()
 
+        self.require_2fa = False
+
     def changeMode(self):
         
         if self.userPassRadioButton.isChecked():
@@ -282,10 +284,10 @@ class GithubCredentialsWizardPage(QWizardPage):
 
     def nextId(self):
         
-        if self.userPassRadioButton.isChecked():
-            return 2 # TODO
-        elif self.tokenRadioButton.isChecked():
-            return 2 # TODO
+        if self.require_2fa:
+            return 2
+        else:
+            return 3
     
     def isComplete(self):
         
@@ -308,6 +310,34 @@ class GithubCredentialsWizardPage(QWizardPage):
                 return True
 
         return False
+   
+    @waiting_effects
+    def validatePage(self):
+        
+        if self.userPassRadioButton.isChecked():
+            username = self.field('username').toString()
+            password = self.field('password').toString()
+            try: 
+                authentication = request_token(username, password, ['repo'], 'QT TEST') 
+            except Require2FAError:
+                self.require_2fa = True
+                return True
+            except AuthenticationError:
+                self.require_2fa = False
+                return False
+            else:
+                self.require_2fa = False
+                return True
+        elif self.tokenRadioButton.isChecked():
+            token = self.field('token').toString()
+            try:
+                self.setField('username', Github(token).get_user().login)
+            except BadCredentialsException:
+                return False
+            else:
+                return True 
+        else:
+            return False
 
 class AccountTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):

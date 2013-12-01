@@ -12,6 +12,9 @@ import json
 class Require2FAError(Exception):
     pass
 
+class AuthenticationError(Exception):
+    pass
+
 def request_token(
         username, password, scopes, user_agent, code_2fa=None,
         base_url=MainClass.DEFAULT_BASE_URL, 
@@ -31,12 +34,15 @@ def request_token(
             "POST", "/authorizations", 
             input={"scopes": scopes, "note": str(user_agent)},
             headers=request_header)
-   
-    if status == 401 and re.match(r'.*required.*', headers['x-github-otp']):
-        raise Require2FAError()
-    else:
-        data = json.loads(data)
-        return Authorization(requester, headers, data, True)
+    
+    try: 
+        if status == 401 and re.match(r'.*required.*', headers['x-github-otp']):
+            raise Require2FAError()
+        else:
+            data = json.loads(data)
+            return Authorization(requester, headers, data, True)
+    except KeyError:
+        raise AuthenticationError()
 
 def gitignore_types(github):
     for i in github.get_user('github')\
