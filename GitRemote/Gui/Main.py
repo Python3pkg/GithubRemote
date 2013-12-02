@@ -3,16 +3,16 @@
 # Copyright (C) 2013, Cameron White
 from .. import TOKEN_PATH
 from .tools import waiting_effects
-from ..tools import load_token, store_token
+from ..tools import load_token, store_token, generate_tokens
 from github import Github
 from github.GithubException import GithubException
 from github.Authorization import Authorization
-from PyQt4.QtCore import QRegExp, QRect, Qt
+from PyQt4.QtCore import QRegExp, QRect, Qt, QPoint
 from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
     QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QMainWindow, \
     QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
     QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap, \
-    QFormLayout, QDialogButtonBox, QValidator
+    QFormLayout, QDialogButtonBox, QValidator, QMenu
                         
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
@@ -62,6 +62,8 @@ class MainWidget(QMainWindow):
         # image on the top right of the toolbar. TODO Attach a menu
         # of all logged in users.
 
+        self.userMenu = QMenu('user accounts menu')
+
         self.userLabel = QLabel(self)
         self.userLabel.setScaledContents(True)
         self.userLabel.setSizePolicy(
@@ -77,9 +79,10 @@ class MainWidget(QMainWindow):
                 QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
 
         hbox = QHBoxLayout()
-        hbox.addWidget(self.userLabel)
         hbox.addWidget(self.userImageLabel)
+        hbox.addWidget(self.userLabel)
         self.userPushButton.setLayout(hbox)
+        self.userPushButton.setMenu(self.userMenu)
 
         # ToolBar
 
@@ -131,11 +134,14 @@ class MainWidget(QMainWindow):
         
         # Update
 
+        self.loadUserMenu()
+        self.activeUserAction.setVisible(False)
         self.authenticate()
+        self.actionsUpdate()
         self.reposRefresh()
         self.updateImage()
-        self.actionsUpdate()
-        
+    
+    @waiting_effects
     def updateImage(self):
 
         try:
@@ -145,13 +151,50 @@ class MainWidget(QMainWindow):
         data = urllib.urlopen(url).read()
         pixmap = QPixmap()
         pixmap.loadFromData(data)
+        self.activeUserAction.setIcon(QIcon(pixmap))
         self.userImageLabel.setPixmap(pixmap)
         self.userImageLabel.setFixedSize(32, 32)
         self.userLabel.setText(self.github.get_user().login)
         size = self.userLabel.sizeHint()
         # TODO - Remove magic numbers
-        self.userPushButton.setFixedSize(size.width() + 60, 48)
+        self.userPushButton.setFixedSize(size.width() + 70, 48)
+        self.userMenu.setFixedWidth(size.width() + 70)
+   
+    @waiting_effects
+    def loadUserMenu(self):
+        
+        action = None
+        for _, username, token in generate_tokens(TOKEN_PATH, 'github'):
+            
+            try:
+                url = Github(token).get_user().avatar_url
+            except (GithubException, AttributeError): 
+                action = QAction(username, self, triggered=self.changeActive)
+                self.userMenu.addAction(action)
+                continue
+            data = urllib.urlopen(url).read()
+            pixmap = QPixmap()
+            pixmap.loadFromData(data)
+            pixmap.scaled(32,32)
+            action = QAction(QIcon(pixmap), username, self,
+                    triggered=self.changeActive)
+            action.setIconVisibleInMenu(True)
+            self.userMenu.addAction(action)
+        
+        self.activeUserAction = action
     
+    def changeActive(self):
+
+        sender = self.sender()
+
+        self.activeUserAction.setVisible(True)
+        self.activeUserAction = sender
+        self.activeUserAction.setVisible(False)
+        self.authenticate()
+        self.actionsUpdate()
+        self.reposRefresh()
+        self.updateImage()
+
     @waiting_effects
     def reposRefresh(self):
 
@@ -172,8 +215,9 @@ class MainWidget(QMainWindow):
     @waiting_effects
     def authenticate(self):
         
+        username = str(self.activeUserAction.text())
         try:
-            token = load_token(TOKEN_PATH) 
+            token = load_token(TOKEN_PATH, 'github', username) 
             self.github = Github(token)
         except IOError, EOFError:
             self.github = None
@@ -197,12 +241,13 @@ class MainWidget(QMainWindow):
         if wizard.exec_():
             username = str(wizard.field('username').toString())
             token = str(wizard.field('token').toString())
-            store_token(TOKEN_PATH, token)
+            store_token(TOKEN_PATH, 'github', username, token)
             self.authenticate()
             self.reposRefresh()
             self.updateImage()
             self.actionsUpdate()
     
+
     def repoAdd(self):
         wizard = AddRepoWizard(self.github, self)
         if wizard.exec_():

@@ -137,8 +137,6 @@ class GithubRepoWizardPage(QWizardPage):
 
     def update(self):
 
-        sender = type(self.sender()) 
-        
         if self.initCheckBox.isChecked():
             self.gitignoreComboBox.setEnabled(True)
         else:
