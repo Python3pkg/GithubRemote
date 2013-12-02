@@ -5,8 +5,8 @@ Access remote github repos
 
 ## Screenshots ##
 
-![screenshot1](http://i.imgur.com/hWG0KK8.png)
-
+![screenshot1](http://i.imgur.com/1ESyIsC.png)
+        
 ## Features ##
 
 * Github accounts
