@@ -555,16 +555,20 @@ class GithubRepoWizardPage(QWizardPage):
         self.hasWikiCheckBox = QCheckBox(stateChanged=self.update)
         self.hasDownloadsCheckBox = QCheckBox(stateChanged=self.update)
         self.hasIssuesCheckBox = QCheckBox(stateChanged=self.update)
+        
+        # gitignoreComboBox
 
         self.gitignoreComboBox = QComboBox(currentIndexChanged=self.update)
         self.gitignoreComboBox.addItem('None')
         for i in gitignore_types(GITHUB):
             self.gitignoreComboBox.addItem(i)
-
+            
         hbox2 = QHBoxLayout()
         hbox2.addWidget(QLabel(
             'Initialize this repository with a README and .gitignore'))
         hbox2.addWidget(self.initCheckBox)
+        
+        # Extension Form
 
         self.form_extension = QFormLayout()
         self.form_extension.addRow("Homepage", self.homepageEdit)  
@@ -573,10 +577,12 @@ class GithubRepoWizardPage(QWizardPage):
         self.form_extension.addRow("Has downloads", self.hasDownloadsCheckBox)
 
         # Extension
+
         self.extension = QWidget()
         self.extension.setLayout(self.form_extension)
 
-        # Form1
+        # Form
+
         self.form = QFormLayout()
         self.form.addRow("Name: ", self.nameEdit)
         self.form.addRow("Description: ", self.descriptionEdit)
@@ -587,11 +593,13 @@ class GithubRepoWizardPage(QWizardPage):
         self.form.addRow(self.extension)
         
         # Layout
+
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addLayout(self.form)
         self.setLayout(self.mainLayout)
     
         # Fields
+
         self.registerField('name*', self.nameEdit)
         self.registerField('description', self.descriptionEdit)
         self.registerField('private', self.privateCheckBox)
@@ -602,6 +610,8 @@ class GithubRepoWizardPage(QWizardPage):
         self.registerField('has_downloads', self.hasDownloadsCheckBox)
         self.registerField('has_wiki', self.hasWikiCheckBox)
         
+        # Setup
+
         self.hasWikiCheckBox.toggle()
         self.hasDownloadsCheckBox.toggle()
         self.hasIssuesCheckBox.toggle()
@@ -668,16 +678,19 @@ class RepoRemoveDialog(QDialog):
         self.nameEdit.setValidator(validator)
 
         # Form
+
         self.form = QFormLayout()
         self.form.addRow(self.label)
         self.form.addRow(self.nameEdit)
         
         # ButtonBox
+
         self.buttonBox = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
             accepted=self.accept, rejected=self.reject)
         
         # Layout
+
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addLayout(self.form)
         self.mainLayout.addWidget(self.buttonBox)
