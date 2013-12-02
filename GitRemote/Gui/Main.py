@@ -7,11 +7,12 @@ from ..tools import load_token, store_token
 from github import Github
 from github.GithubException import GithubException
 from github.Authorization import Authorization
-from PyQt4.QtCore import QRegExp, QRect
+from PyQt4.QtCore import QRegExp, QRect, Qt
 from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
     QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QMainWindow, \
     QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
-    QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap
+    QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap, \
+    QFormLayout, QDialogButtonBox, QValidator
                         
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
