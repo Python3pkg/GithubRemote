@@ -44,18 +44,43 @@ def request_token(
     except KeyError:
         raise AuthenticationError()
 
-def store_token(file_path, token):
+def store_token(file_path, account_type, username, token):
     
-    with open(file_path, 'w+') as f:
-        json.dump({'token':token}, f)
+    try:
+        with open(file_path, 'r') as f:
+            d = json.load(f)
+    except IOError:
+        d = {}
+    
+    if account_type not in d:
+        d[account_type] = {}
+    if username not in d[account_type]:
+        d[account_type][username] = {}
 
-def load_token(file_path):
+    d[account_type][username]['token'] = token
+
+    with open(file_path, 'w+') as f:
+        json.dump(d, f)
+
+def load_token(file_path, account_type, username):
 
     with open(file_path, 'r') as f:
         try: 
-            return json.load(f)['token']
+            return json.load(f)[account_type][username]['token']
         except KeyError:
             return None
+
+def generate_tokens(file_path, account_type):
+    
+    with open(file_path, 'r') as f:
+        try: 
+            j = json.load(f)
+            for username in j[account_type]:
+                token = j[account_type][username]['token']
+                yield (account_type, username, token)
+
+        except (IOError, KeyError):
+            pass
 
 def gitignore_types(github):
     for i in github.get_user('github')\
