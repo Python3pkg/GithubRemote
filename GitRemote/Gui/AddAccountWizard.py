@@ -1,13 +1,14 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
-from .tools import *
-from ..tools import *
+from .tools import waiting_effects
+from ..tools import request_token, Require2FAError, AuthenticationError
 from github import Github
-from github.GithubException import *
+from github.GithubException import BadCredentialsException
 from github.Authorization import Authorization
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QRegExp
+from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
+    QRegExpValidator, QVBoxLayout, QLabel, QFormLayout, QValidator
 
 class GithubCredentialsWizardPage(QWizardPage):
     def __init__(self, parent=None):

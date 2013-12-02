@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
 from .. import TOKEN_PATH
-from .tools import *
-from ..tools import *
+from .tools import waiting_effects
+from ..tools import load_token, store_token
 from github import Github
-from github.GithubException import *
+from github.GithubException import GithubException
 from github.Authorization import Authorization
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QRegExp, QRect
+from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
+    QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QMainWindow, \
+    QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
+    QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap
+                        
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
 import urllib

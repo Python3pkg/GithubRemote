@@ -1,13 +1,12 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
-from .tools import *
-from ..tools import *
 from github import Github
-from github.GithubException import *
-from github.Authorization import Authorization
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from ..tools import gitignore_types
+from PyQt4.QtCore import QRegExp
+from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
+    QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, \
+    QWidget, QSizePolicy, QCheckBox, QComboBox, QFormLayout
 
 class RepoTypeWizardPage(QWizardPage):
     def __init__(self, parent=None):

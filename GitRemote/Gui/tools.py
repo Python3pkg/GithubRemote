@@ -1,5 +1,5 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt4.QtGui import QApplication, QCursor
+from PyQt4.QtCore import Qt
 
 def waiting_effects(function):
     def new_function(self):

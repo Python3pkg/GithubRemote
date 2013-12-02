@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
-from tools import *
+from GitRemote.tools import AuthenticationError, Require2FAError, \
+    request_token    
 import json
 import getpass
 import os
