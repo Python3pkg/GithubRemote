@@ -49,15 +49,11 @@ class MainWidget(QMainWindow):
                 statusTip='Refresh list of repos')
         self.repoRefreshAction.triggered.connect(self.reposRefresh)
 
-        self.userSignInAction = QAction(
-                'User Sign&in', self,
-                statusTip='Sign In')
-        self.userSignInAction.triggered.connect(self.userSignIn)
+        self.addAccountAction = QAction(
+                'Add Account', self,
+                statusTip='Add Account')
+        self.addAccountAction.triggered.connect(self.addAccount)
 
-        self.userSignOutAction = QAction(
-                'User Sign&out', self,
-                statusTip='Sign Out')
-        
         # userPushButton - Displays the current active username and 
         # image on the top right of the toolbar. TODO Attach a menu
         # of all logged in users.
@@ -102,8 +98,7 @@ class MainWidget(QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('&File')
         actionMenu = menuBar.addMenu('&Action')
-        fileMenu.addAction(self.userSignInAction)
-        fileMenu.addAction(self.userSignOutAction)
+        fileMenu.addAction(self.addAccountAction)
         actionMenu.addAction(self.repoAddAction)
         actionMenu.addAction(self.repoRemoveAction)
         actionMenu.addAction(self.repoRefreshAction)
@@ -236,7 +231,7 @@ class MainWidget(QMainWindow):
             else:
                 self.repoRemoveAction.setEnabled(False)
 
-    def userSignIn(self):
+    def addAccount(self):
         wizard = AddAccountWizard(self)
         if wizard.exec_():
             username = str(wizard.field('username').toString())
