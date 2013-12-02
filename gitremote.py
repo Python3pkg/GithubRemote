@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
-from core import *
+from tools import *
 import json
 import getpass
 import os
