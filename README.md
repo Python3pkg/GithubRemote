@@ -13,13 +13,12 @@ Access remote github repos
 * List user's repos
 * Remove selected repo
 * Create new repos
+* Multiple accounts
 
 ## TODO ##
 
-* Multiple users
 * Bitbucket
 * better format for list of repos
-* Loggin wizard
 * command line
 
 ## Dependencies ##
