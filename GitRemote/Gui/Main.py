@@ -13,7 +13,6 @@ from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
     QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
     QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap, \
     QFormLayout, QDialogButtonBox, QValidator, QMenu
-                        
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
 import urllib
@@ -110,7 +109,7 @@ class MainWidget(QMainWindow):
 
         # reposTableWidget - Displays a list of the users repositories
 
-        self.reposTableWidgetHeaders = ["Name", "Description"]
+        self.reposTableWidgetHeaders = ["Icon", "Name"]
         self.reposTableWidget = QTableWidget(0,
                 len(self.reposTableWidgetHeaders),
                 selectionBehavior = QAbstractItemView.SelectRows,
@@ -120,6 +119,9 @@ class MainWidget(QMainWindow):
         self.reposTableWidget.setHorizontalHeaderLabels(
                 self.reposTableWidgetHeaders)
         self.reposTableWidget.horizontalHeader().setStretchLastSection(True)
+        self.reposTableWidget.horizontalHeader().setVisible(False)
+        self.reposTableWidget.verticalHeader().setVisible(False)
+        self.reposTableWidget.setShowGrid(False)
 
         # Layout
 
@@ -192,17 +194,30 @@ class MainWidget(QMainWindow):
 
     @waiting_effects
     def reposRefresh(self):
-
+        repo_pixmap = QPixmap('images/book_32.png')
+        fork_pixmap = QPixmap('images/book_fork_32.png')
         try:
             repos = self.github.get_user().get_repos()
             self.reposTableWidget.setRowCount(self.github.get_user().public_repos)
         except (GithubException, AttributeError):
             return
         for row, repo in enumerate(repos):
-            nameTableWidgetItem = QTableWidgetItem(str(repo.name))
-            descTableWidgetItem = QTableWidgetItem(str(repo.description))
-            self.reposTableWidget.setItem(row, 0, nameTableWidgetItem)
-            self.reposTableWidget.setItem(row, 1, descTableWidgetItem)
+            imageLabel = QLabel()
+            if repo.fork:
+                imageLabel.setPixmap(fork_pixmap)
+            else:
+                imageLabel.setPixmap(repo_pixmap)
+            imageLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            imageLabel.setFixedWidth(imageLabel.sizeHint().width() + 10)
+            self.reposTableWidget.setCellWidget(row, 0, imageLabel)
+            label = QLabel(
+                    '<pre><b>{}</b>\n{}</pre>'.format(
+                        str(repo.name), str(repo.description)))
+            label.setAlignment(Qt.AlignVCenter)
+            labelHeight = max(label.sizeHint().height(),
+                    imageLabel.sizeHint().height())
+            label.setFixedHeight(labelHeight + 10)
+            self.reposTableWidget.setCellWidget(row, 1, label)
         for i in range(self.reposTableWidget.columnCount()-1):
             self.reposTableWidget.resizeColumnToContents(i)
         self.reposTableWidget.resizeRowsToContents()
