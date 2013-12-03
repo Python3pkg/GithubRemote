@@ -12,7 +12,7 @@ from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
     QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QMainWindow, \
     QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
     QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap, \
-    QFormLayout, QDialogButtonBox, QValidator, QMenu
+    QFormLayout, QDialogButtonBox, QValidator, QMenu, QHeaderView
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
 import urllib
@@ -109,7 +109,7 @@ class MainWidget(QMainWindow):
 
         # reposTableWidget - Displays a list of the users repositories
 
-        self.reposTableWidgetHeaders = ["Icon", "Name"]
+        self.reposTableWidgetHeaders = ["Icon", "Name", "Star", "watchers", "forks"]
         self.reposTableWidget = QTableWidget(0,
                 len(self.reposTableWidgetHeaders),
                 selectionBehavior = QAbstractItemView.SelectRows,
@@ -118,7 +118,7 @@ class MainWidget(QMainWindow):
                 itemSelectionChanged = self.actionsUpdate)
         self.reposTableWidget.setHorizontalHeaderLabels(
                 self.reposTableWidgetHeaders)
-        self.reposTableWidget.horizontalHeader().setStretchLastSection(True)
+        self.reposTableWidget.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
         self.reposTableWidget.horizontalHeader().setVisible(False)
         self.reposTableWidget.verticalHeader().setVisible(False)
         self.reposTableWidget.setShowGrid(False)
@@ -195,7 +195,11 @@ class MainWidget(QMainWindow):
     @waiting_effects
     def reposRefresh(self):
         repo_pixmap = QPixmap('images/book_32.png')
-        fork_pixmap = QPixmap('images/book_fork_32.png')
+        repo_fork_pixmap = QPixmap('images/book_fork_32.png')
+        star_pixmap = QPixmap('images/star.png')
+        fork_pixmap = QPixmap('images/fork.png')
+        eye_pixmap = QPixmap('images/eye.png')
+
         try:
             repos = self.github.get_user().get_repos()
             self.reposTableWidget.setRowCount(self.github.get_user().public_repos)
@@ -204,20 +208,26 @@ class MainWidget(QMainWindow):
         for row, repo in enumerate(repos):
             imageLabel = QLabel()
             if repo.fork:
-                imageLabel.setPixmap(fork_pixmap)
+                imageLabel.setPixmap(repo_fork_pixmap)
             else:
                 imageLabel.setPixmap(repo_pixmap)
             imageLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
             imageLabel.setFixedWidth(imageLabel.sizeHint().width() + 10)
             self.reposTableWidget.setCellWidget(row, 0, imageLabel)
-            label = QLabel(
-                    '<pre><b>{}</b>\n{}</pre>'.format(
+            label = QLabel('<pre><b>{}</b>\n{}</pre>'.format(
                         str(repo.name), str(repo.description)))
             label.setAlignment(Qt.AlignVCenter)
             labelHeight = max(label.sizeHint().height(),
                     imageLabel.sizeHint().height())
             label.setFixedHeight(labelHeight + 10)
             self.reposTableWidget.setCellWidget(row, 1, label)
+            self.reposTableWidget.setItem(row, 2, 
+                    QTableWidgetItem(QIcon(star_pixmap), '0'))
+            print(repr(repo.watchers_count))
+            self.reposTableWidget.setItem(row, 3, 
+                    QTableWidgetItem(QIcon(eye_pixmap), str(repo.watchers_count)))
+            self.reposTableWidget.setItem(row, 4, 
+                    QTableWidgetItem(QIcon(fork_pixmap), str(repo.forks_count)))
         for i in range(self.reposTableWidget.columnCount()-1):
             self.reposTableWidget.resizeColumnToContents(i)
         self.reposTableWidget.resizeRowsToContents()
