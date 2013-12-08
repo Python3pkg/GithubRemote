@@ -7,7 +7,7 @@ from ..tools import load_token, store_token, generate_tokens
 from github import Github
 from github.GithubException import GithubException
 from github.Authorization import Authorization
-from PyQt4.QtCore import QRegExp, QRect, Qt, QPoint
+from PyQt4.QtCore import QRegExp, QRect, Qt, QPoint, SIGNAL, SLOT
 from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
     QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QMainWindow, \
     QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
@@ -146,7 +146,6 @@ class MainWidget(QMainWindow):
             data = urllib.urlopen(url).read()
             pixmap = QPixmap()
             pixmap.loadFromData(data)
-            #pixmap.scaled(32,32)
             action = QAction(QIcon(pixmap), username, self,
                     triggered=self.changeActive)
             action.setIconVisibleInMenu(True)
@@ -186,22 +185,22 @@ class MainWidget(QMainWindow):
             else:
                 imageLabel.setPixmap(repo_pixmap)
             imageLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-            imageLabel.setFixedWidth(imageLabel.sizeHint().width() + 10)
             self.reposTableWidget.setCellWidget(row, 0, imageLabel)
-            label = QLabel('<pre><b>{}</b>\n{}</pre>'.format(
+            label = QLabel('<b>{}</b><br />{}'.format(
                         str(repo.name), str(repo.description)))
             label.setAlignment(Qt.AlignVCenter)
+            label.setWordWrap(True)
             labelHeight = max(label.sizeHint().height(),
                     imageLabel.sizeHint().height())
             label.setFixedHeight(labelHeight + 10)
             self.reposTableWidget.setCellWidget(row, 1, label)
             self.reposTableWidget.setItem(row, 2, 
                     QTableWidgetItem(QIcon(star_pixmap), '0'))
-            print(repr(repo.watchers_count))
             self.reposTableWidget.setItem(row, 3, 
                     QTableWidgetItem(QIcon(eye_pixmap), str(repo.watchers_count)))
             self.reposTableWidget.setItem(row, 4, 
                     QTableWidgetItem(QIcon(fork_pixmap), str(repo.forks_count)))
+
         for i in range(self.reposTableWidget.columnCount()-1):
             self.reposTableWidget.resizeColumnToContents(i)
         self.reposTableWidget.resizeRowsToContents()
