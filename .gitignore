@@ -38,3 +38,7 @@ nosetests.xml
 # vim
 *.swo
 *.swp
+
+# GitRemote
+token*.json
+
