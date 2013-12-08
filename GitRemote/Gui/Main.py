@@ -54,30 +54,9 @@ class MainWidget(QMainWindow):
         self.addAccountAction.triggered.connect(self.addAccount)
 
         # userPushButton - Displays the current active username and 
-        # image on the top right of the toolbar. TODO Attach a menu
-        # of all logged in users.
-
-        self.userMenu = QMenu('user accounts menu')
-
-        self.userLabel = QLabel(self)
-        self.userLabel.setScaledContents(True)
-        self.userLabel.setSizePolicy(
-                QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
-
-        self.userImageLabel = QLabel(self)
-        self.userImageLabel.setScaledContents(True)
-        self.userLabel.setSizePolicy(
-                QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
-
-        self.userPushButton = QPushButton(self)
-        self.userPushButton.setSizePolicy(
-                QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
-
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.userImageLabel)
-        hbox.addWidget(self.userLabel)
-        self.userPushButton.setLayout(hbox)
-        self.userPushButton.setMenu(self.userMenu)
+        # image on the top right of the toolbar.
+        
+        self.userButtonMenu = UserButtonMenu(32,32)
 
         # ToolBar
 
@@ -90,7 +69,7 @@ class MainWidget(QMainWindow):
         self.toolBar.addAction(self.repoRemoveAction)
         self.toolBar.addAction(self.repoRefreshAction)
         self.toolBar.addWidget(spacer)
-        self.toolBar.addWidget(self.userPushButton)
+        self.toolBar.addWidget(self.userButtonMenu)
 
         # Menu
 
@@ -149,13 +128,8 @@ class MainWidget(QMainWindow):
         pixmap = QPixmap()
         pixmap.loadFromData(data)
         self.activeUserAction.setIcon(QIcon(pixmap))
-        self.userImageLabel.setPixmap(pixmap)
-        self.userImageLabel.setFixedSize(32, 32)
-        self.userLabel.setText(self.github.get_user().login)
-        size = self.userLabel.sizeHint()
-        # TODO - Remove magic numbers
-        self.userPushButton.setFixedSize(size.width() + 70, 48)
-        self.userMenu.setFixedWidth(size.width() + 70)
+        self.userButtonMenu.setPixmap(pixmap)
+        self.userButtonMenu.setText(self.github.get_user().login)
    
     @waiting_effects
     def loadUserMenu(self):
@@ -167,16 +141,16 @@ class MainWidget(QMainWindow):
                 url = Github(token).get_user().avatar_url
             except (GithubException, AttributeError): 
                 action = QAction(username, self, triggered=self.changeActive)
-                self.userMenu.addAction(action)
+                self.userButtonMenu.addAction(action)
                 continue
             data = urllib.urlopen(url).read()
             pixmap = QPixmap()
             pixmap.loadFromData(data)
-            pixmap.scaled(32,32)
+            #pixmap.scaled(32,32)
             action = QAction(QIcon(pixmap), username, self,
                     triggered=self.changeActive)
             action.setIconVisibleInMenu(True)
-            self.userMenu.addAction(action)
+            self.userButtonMenu.addAction(action)
         
         self.activeUserAction = action
     
@@ -266,7 +240,6 @@ class MainWidget(QMainWindow):
             self.reposRefresh()
             self.updateImage()
             self.actionsUpdate()
-    
 
     def repoAdd(self):
         wizard = AddRepoWizard(self.github, self)
@@ -306,6 +279,56 @@ class MainWidget(QMainWindow):
             self.reposTableWidget.selectionModel().selectedRows()
         for index in selectedModelIndexes:
             return index.row()
+
+class UserButtonMenu(QPushButton):
+    def  __init__(self, image_width, image_height, parent=None):
+        super(UserButtonMenu, self).__init__(parent)
+        
+        self.image_width = image_width
+        self.image_height = image_height
+
+        self.label = QLabel(self)
+        self.label.setScaledContents(True)
+        self.label.setSizePolicy(
+                QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+
+        self.imageLabel = QLabel(self)
+        self.imageLabel.setScaledContents(True)
+        self.imageLabel.setSizePolicy(
+                QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+
+        self.setSizePolicy(
+                QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+
+        self.userMenu = QMenu('user accounts menu') # TODO Remove magic
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.imageLabel)
+        hbox.addWidget(self.label)
+        self.setLayout(hbox)
+        self.setMenu(self.userMenu)
+
+    def addAction(self, action):
+
+        self.userMenu.addAction(action)
+
+    def setPixmap(self, pixmap):
+        
+        self.imageLabel.setPixmap(pixmap)
+        self.imageLabel.setFixedSize(
+                self.image_width, self.image_height)
+    
+    def setText(self, text):
+
+        self.label.setText(text)
+        self.adjustSize()
+
+    def adjustSize(self):
+        # TODO - Remove magic numbers
+        label_size = self.label.sizeHint()
+        image_size = self.imageLabel.sizeHint()
+        self.setFixedSize(label_size.width() + 70, 48)
+        self.userMenu.setFixedWidth(label_size.width() + 70)
 
 class RepoRemoveDialog(QDialog):
     def __init__(self, github, name, parent=None):
