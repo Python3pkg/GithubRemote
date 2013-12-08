@@ -88,19 +88,24 @@ class MainWidget(QMainWindow):
 
         # reposTableWidget - Displays a list of the users repositories
 
-        self.reposTableWidgetHeaders = ["Icon", "Name", "Star", "watchers", "forks"]
-        self.reposTableWidget = QTableWidget(0,
-                len(self.reposTableWidgetHeaders),
+        self.reposTableWidget = QTableWidget(0, 5,
                 selectionBehavior = QAbstractItemView.SelectRows,
                 selectionMode = QAbstractItemView.SingleSelection,
                 editTriggers = QAbstractItemView.NoEditTriggers,
                 itemSelectionChanged = self.actionsUpdate)
-        self.reposTableWidget.setHorizontalHeaderLabels(
-                self.reposTableWidgetHeaders)
+        self.reposTableWidget.horizontalHeader().setResizeMode(0,
+                QHeaderView.ResizeToContents)
         self.reposTableWidget.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
+        self.reposTableWidget.horizontalHeader().setResizeMode(2,
+                QHeaderView.ResizeToContents)
+        self.reposTableWidget.horizontalHeader().setResizeMode(3,
+                QHeaderView.ResizeToContents)
+        self.reposTableWidget.horizontalHeader().setResizeMode(4,
+                QHeaderView.ResizeToContents)
         self.reposTableWidget.horizontalHeader().setVisible(False)
         self.reposTableWidget.verticalHeader().setVisible(False)
         self.reposTableWidget.setShowGrid(False)
+        self.reposTableWidget.verticalHeader().setMinimumSectionSize(25)
 
         # Layout
 
@@ -167,8 +172,8 @@ class MainWidget(QMainWindow):
 
     @waiting_effects
     def reposRefresh(self):
-        repo_pixmap = QPixmap('images/book_32.png')
-        repo_fork_pixmap = QPixmap('images/book_fork_32.png')
+        repo_pixmap = QPixmap('images/book_16.png')
+        repo_fork_pixmap = QPixmap('images/book_fork_16.png')
         star_pixmap = QPixmap('images/star.png')
         fork_pixmap = QPixmap('images/fork.png')
         eye_pixmap = QPixmap('images/eye.png')
@@ -190,9 +195,6 @@ class MainWidget(QMainWindow):
                         str(repo.name), str(repo.description)))
             label.setAlignment(Qt.AlignVCenter)
             label.setWordWrap(True)
-            labelHeight = max(label.sizeHint().height(),
-                    imageLabel.sizeHint().height())
-            label.setFixedHeight(labelHeight + 10)
             self.reposTableWidget.setCellWidget(row, 1, label)
             self.reposTableWidget.setItem(row, 2, 
                     QTableWidgetItem(QIcon(star_pixmap), '0'))
@@ -201,8 +203,6 @@ class MainWidget(QMainWindow):
             self.reposTableWidget.setItem(row, 4, 
                     QTableWidgetItem(QIcon(fork_pixmap), str(repo.forks_count)))
 
-        for i in range(self.reposTableWidget.columnCount()-1):
-            self.reposTableWidget.resizeColumnToContents(i)
         self.reposTableWidget.resizeRowsToContents()
 
     @waiting_effects
