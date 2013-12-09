@@ -17,7 +17,9 @@ from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
 import urllib
 
+
 class MainWidget(QMainWindow):
+
 
     def __init__(self, parent=None):
         super(MainWidget, self).__init__(
@@ -93,15 +95,9 @@ class MainWidget(QMainWindow):
                 selectionMode = QAbstractItemView.SingleSelection,
                 editTriggers = QAbstractItemView.NoEditTriggers,
                 itemSelectionChanged = self.actionsUpdate)
-        self.reposTableWidget.horizontalHeader().setResizeMode(0,
+        self.reposTableWidget.horizontalHeader().setResizeMode(
                 QHeaderView.ResizeToContents)
         self.reposTableWidget.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
-        self.reposTableWidget.horizontalHeader().setResizeMode(2,
-                QHeaderView.ResizeToContents)
-        self.reposTableWidget.horizontalHeader().setResizeMode(3,
-                QHeaderView.ResizeToContents)
-        self.reposTableWidget.horizontalHeader().setResizeMode(4,
-                QHeaderView.ResizeToContents)
         self.reposTableWidget.horizontalHeader().setVisible(False)
         self.reposTableWidget.verticalHeader().setVisible(False)
         self.reposTableWidget.setShowGrid(False)
@@ -113,6 +109,12 @@ class MainWidget(QMainWindow):
         self.actionsUpdate()
         self.show()
         
+        self.repo_pixmap = QPixmap('images/book_16.png')
+        self.repo_fork_pixmap = QPixmap('images/book_fork_16.png')
+        self.star_pixmap = QPixmap('images/star.png')
+        self.fork_pixmap = QPixmap('images/fork.png')
+        self.eye_pixmap = QPixmap('images/eye.png')
+
         # Update
 
         self.loadUserMenu()
@@ -121,6 +123,7 @@ class MainWidget(QMainWindow):
         self.actionsUpdate()
         self.reposRefresh()
         self.updateImage()
+
     
     @waiting_effects
     def updateImage(self):
@@ -172,11 +175,6 @@ class MainWidget(QMainWindow):
 
     @waiting_effects
     def reposRefresh(self):
-        repo_pixmap = QPixmap('images/book_16.png')
-        repo_fork_pixmap = QPixmap('images/book_fork_16.png')
-        star_pixmap = QPixmap('images/star.png')
-        fork_pixmap = QPixmap('images/fork.png')
-        eye_pixmap = QPixmap('images/eye.png')
 
         try:
             repos = self.github.get_user().get_repos()
@@ -186,22 +184,25 @@ class MainWidget(QMainWindow):
         for row, repo in enumerate(repos):
             imageLabel = QLabel()
             if repo.fork:
-                imageLabel.setPixmap(repo_fork_pixmap)
+                imageLabel.setPixmap(self.repo_fork_pixmap)
             else:
-                imageLabel.setPixmap(repo_pixmap)
+                imageLabel.setPixmap(self.repo_pixmap)
             imageLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            imageLabel.setMargin(5)
+
             self.reposTableWidget.setCellWidget(row, 0, imageLabel)
             label = QLabel('<b>{}</b><br />{}'.format(
                         str(repo.name), str(repo.description)))
             label.setAlignment(Qt.AlignVCenter)
+            label.setMargin(5)
             label.setWordWrap(True)
             self.reposTableWidget.setCellWidget(row, 1, label)
             self.reposTableWidget.setItem(row, 2, 
-                    QTableWidgetItem(QIcon(star_pixmap), '0'))
+                    QTableWidgetItem(QIcon(self.star_pixmap), '0'))
             self.reposTableWidget.setItem(row, 3, 
-                    QTableWidgetItem(QIcon(eye_pixmap), str(repo.watchers_count)))
+                    QTableWidgetItem(QIcon(self.eye_pixmap), str(repo.watchers_count)))
             self.reposTableWidget.setItem(row, 4, 
-                    QTableWidgetItem(QIcon(fork_pixmap), str(repo.forks_count)))
+                    QTableWidgetItem(QIcon(self.fork_pixmap), str(repo.forks_count)))
 
         self.reposTableWidget.resizeRowsToContents()
 
