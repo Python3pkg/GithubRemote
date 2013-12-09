@@ -111,9 +111,9 @@ class MainWidget(QMainWindow):
         
         self.repo_pixmap = QPixmap('images/book_16.png')
         self.repo_fork_pixmap = QPixmap('images/book_fork_16.png')
-        self.star_pixmap = QPixmap('images/star.png')
-        self.fork_pixmap = QPixmap('images/fork.png')
-        self.eye_pixmap = QPixmap('images/eye.png')
+        self.star_pixmap = QPixmap('images/star_16.png')
+        self.fork_pixmap = QPixmap('images/fork_16.png')
+        self.eye_pixmap = QPixmap('images/eye_16.png')
 
         # Update
 
