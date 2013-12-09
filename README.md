@@ -5,7 +5,7 @@ Access remote github repos
 
 ## Screenshots ##
 
-![screenshot1](http://i.imgur.com/ppSVlnE.png)
+![screenshot1](http://i.imgur.com/M8Ehc9J.png)
 
 ## Features ##
 
