@@ -7,12 +7,13 @@ from ..tools import load_token, store_token, generate_tokens
 from github import Github
 from github.GithubException import GithubException
 from github.Authorization import Authorization
-from PyQt4.QtCore import QRegExp, QRect, Qt, QPoint, SIGNAL, SLOT
+from PyQt4.QtCore import QRegExp, QRect, Qt, QPoint, QSize, SIGNAL, SLOT
 from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
     QRegExpValidator, QVBoxLayout, QHBoxLayout, QLabel, QMainWindow, \
     QDialog, QIcon, QAction, QSizePolicy, QPushButton, QWidget, \
     QTableWidget, QTableWidgetItem, QAbstractItemView, QPixmap, \
-    QFormLayout, QDialogButtonBox, QValidator, QMenu, QHeaderView
+    QFormLayout, QDialogButtonBox, QValidator, QMenu, QHeaderView, \
+    QTabWidget, QTabBar, QStyle, QStylePainter, QStyleOptionTab
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
 import urllib
@@ -27,6 +28,13 @@ class MainWidget(QMainWindow):
                 windowTitle='GitRemote',
                 windowIcon=QIcon('images/git.png'),
                 geometry=QRect(300, 300, 600, 372))
+
+        self.repo_pixmap = QPixmap('images/book_16.png')
+        self.big_repo_pixmap = QPixmap('images/book_32.png')
+        self.repo_fork_pixmap = QPixmap('images/book_fork_16.png')
+        self.star_pixmap = QPixmap('images/star_16.png')
+        self.fork_pixmap = QPixmap('images/fork_16.png')
+        self.eye_pixmap = QPixmap('images/eye_16.png')
 
         self.github = None        
 
@@ -103,18 +111,24 @@ class MainWidget(QMainWindow):
         self.reposTableWidget.setShowGrid(False)
         self.reposTableWidget.verticalHeader().setMinimumSectionSize(25)
 
+        # repoTab - Layout
+        reposTab = QWidget()
+        reposTabLayout = QVBoxLayout(reposTab)
+        reposTabLayout.addWidget(self.reposTableWidget)
+        reposTab.setLayout(reposTabLayout)
+
+        # Tab Widget
+        self.tabs = QTabWidget()
+        self.tabs.setTabBar(FlippedTabBar(self))
+        self.tabs.addTab(reposTab, QIcon(self.big_repo_pixmap), "repos")
+        self.tabs.setTabPosition(QTabWidget.West)
+
         # Layout
 
-        self.setCentralWidget(self.reposTableWidget)
+        self.setCentralWidget(self.tabs)
         self.actionsUpdate()
         self.show()
         
-        self.repo_pixmap = QPixmap('images/book_16.png')
-        self.repo_fork_pixmap = QPixmap('images/book_fork_16.png')
-        self.star_pixmap = QPixmap('images/star_16.png')
-        self.fork_pixmap = QPixmap('images/fork_16.png')
-        self.eye_pixmap = QPixmap('images/eye_16.png')
-
         # Update
 
         self.loadUserMenu()
@@ -385,3 +399,20 @@ class RepoRemoveDialog(QDialog):
         else:
             b = False
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(b)
+
+class FlippedTabBar(QTabBar):
+    def __init__(self, parent=None):
+        super(FlippedTabBar, self).__init__(parent)
+
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        option = QStyleOptionTab()
+
+        for index in range(self.count()):
+            self.initStyleOption(option, index)
+            tabRect = self.tabRect(index)
+            tabRect.moveLeft(10)
+            tabRect.setLeft(0)
+            painter.drawControl(QStyle.CE_TabBarTabShape, option)
+            self.tabIcon(index).paint(painter, tabRect)
+            painter.end()
