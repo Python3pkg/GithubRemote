@@ -210,10 +210,13 @@ class MainWidget(QMainWindow):
         self.authenticate()
         self.actionsUpdate()
         self.reposRefresh()
+        self.starsRefresh()
         self.updateImage()
 
     @waiting_effects
     def reposRefresh(self):
+
+        self.reposTableWidget.clearContents()
 
         try:
             repos = self.github.get_user().get_repos()
@@ -247,6 +250,8 @@ class MainWidget(QMainWindow):
 
     @waiting_effects
     def starsRefresh(self):
+
+        self.starsTableWidget.clearContents()
 
         try:
             starred = self.github.get_user().get_starred()
