@@ -33,6 +33,7 @@ class MainWidget(QMainWindow):
         self.big_repo_pixmap = QPixmap('images/book_32.png')
         self.repo_fork_pixmap = QPixmap('images/book_fork_16.png')
         self.star_pixmap = QPixmap('images/star_16.png')
+        self.big_star_pixmap = QPixmap('images/star_32.png')
         self.fork_pixmap = QPixmap('images/fork_16.png')
         self.eye_pixmap = QPixmap('images/eye_16.png')
 
@@ -54,9 +55,10 @@ class MainWidget(QMainWindow):
 
         self.repoRefreshAction = QAction(
                 QIcon('images/refresh.png'),
-                'Refresh Repos', self,
+                'Refresh', self,
                 statusTip='Refresh list of repos')
         self.repoRefreshAction.triggered.connect(self.reposRefresh)
+        self.repoRefreshAction.triggered.connect(self.starsRefresh)
 
         self.addAccountAction = QAction(
                 'Add Account', self,
@@ -117,10 +119,32 @@ class MainWidget(QMainWindow):
         reposTabLayout.addWidget(self.reposTableWidget)
         reposTab.setLayout(reposTabLayout)
 
+        # starsTableWidget - Displays a list of the users repositories
+
+        self.starsTableWidget = QTableWidget(0, 5,
+                selectionBehavior = QAbstractItemView.SelectRows,
+                selectionMode = QAbstractItemView.SingleSelection,
+                editTriggers = QAbstractItemView.NoEditTriggers,
+                itemSelectionChanged = self.actionsUpdate)
+        self.starsTableWidget.horizontalHeader().setResizeMode(
+                QHeaderView.ResizeToContents)
+        self.starsTableWidget.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
+        self.starsTableWidget.horizontalHeader().setVisible(False)
+        self.starsTableWidget.verticalHeader().setVisible(False)
+        self.starsTableWidget.setShowGrid(False)
+        self.starsTableWidget.verticalHeader().setMinimumSectionSize(25)
+
+        # repoTab - Layout
+        starsTab = QWidget()
+        starsTabLayout = QVBoxLayout(starsTab)
+        starsTabLayout.addWidget(self.starsTableWidget)
+        starsTab.setLayout(starsTabLayout)
+        
         # Tab Widget
         self.tabs = QTabWidget()
         self.tabs.setTabBar(FlippedTabBar(self))
         self.tabs.addTab(reposTab, QIcon(self.big_repo_pixmap), "repos")
+        self.tabs.addTab(starsTab, QIcon(self.big_star_pixmap), "stars")
         self.tabs.setTabPosition(QTabWidget.West)
 
         # Layout
@@ -136,6 +160,7 @@ class MainWidget(QMainWindow):
         self.authenticate()
         self.actionsUpdate()
         self.reposRefresh()
+        self.starsRefresh()
         self.updateImage()
 
     
@@ -219,6 +244,39 @@ class MainWidget(QMainWindow):
                     QTableWidgetItem(QIcon(self.fork_pixmap), str(repo.forks_count)))
 
         self.reposTableWidget.resizeRowsToContents()
+
+    @waiting_effects
+    def starsRefresh(self):
+
+        try:
+            starred = self.github.get_user().get_starred()
+            self.starsTableWidget.setRowCount(self.github.get_user().public_repos)
+        except (GithubException, AttributeError):
+            return
+        for row, repo in enumerate(starred):
+            imageLabel = QLabel()
+            if repo.fork:
+                imageLabel.setPixmap(self.repo_fork_pixmap)
+            else:
+                imageLabel.setPixmap(self.repo_pixmap)
+            imageLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            imageLabel.setMargin(5)
+
+            self.starsTableWidget.setCellWidget(row, 0, imageLabel)
+            label = QLabel('<b>{}/{}</b><br />{}'.format(
+                str(repo.owner.login), str(repo.name), str(repo.description)))
+            label.setAlignment(Qt.AlignVCenter)
+            label.setMargin(5)
+            label.setWordWrap(True)
+            self.starsTableWidget.setCellWidget(row, 1, label)
+            self.starsTableWidget.setItem(row, 2, 
+                    QTableWidgetItem(QIcon(self.star_pixmap), '0'))
+            self.starsTableWidget.setItem(row, 3, 
+                    QTableWidgetItem(QIcon(self.eye_pixmap), str(repo.watchers_count)))
+            self.starsTableWidget.setItem(row, 4, 
+                    QTableWidgetItem(QIcon(self.fork_pixmap), str(repo.forks_count)))
+
+        self.starsTableWidget.resizeRowsToContents()
 
     @waiting_effects
     def authenticate(self):
@@ -415,4 +473,4 @@ class FlippedTabBar(QTabBar):
             tabRect.setLeft(0)
             painter.drawControl(QStyle.CE_TabBarTabShape, option)
             self.tabIcon(index).paint(painter, tabRect)
-            painter.end()
+        painter.end()
