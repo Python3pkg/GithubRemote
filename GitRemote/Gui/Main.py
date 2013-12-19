@@ -240,7 +240,7 @@ class MainWidget(QMainWindow):
             label.setWordWrap(True)
             self.reposTableWidget.setCellWidget(row, 1, label)
             self.reposTableWidget.setItem(row, 2, 
-                    QTableWidgetItem(QIcon(self.star_pixmap), '0'))
+                    QTableWidgetItem(QIcon(self.star_pixmap), str(repo.stargazers_count)))
             self.reposTableWidget.setItem(row, 3, 
                     QTableWidgetItem(QIcon(self.eye_pixmap), str(repo.watchers_count)))
             self.reposTableWidget.setItem(row, 4, 
