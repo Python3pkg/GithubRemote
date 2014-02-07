@@ -1,1 +1,3 @@
-TOKEN_PATH = './config.cfg'
+import os.path
+
+CONFIG_PATH = os.path.expanduser('~/.githubremote.cfg')

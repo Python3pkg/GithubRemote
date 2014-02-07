@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
 from pkg_resources import resource_filename
-from .. import TOKEN_PATH
+from .. import CONFIG_PATH
 from .tools import waiting_effects
 from ..tools import load_token, store_token, generate_tokens
 from github import Github
@@ -188,7 +188,7 @@ class MainWidget(QMainWindow):
     def loadUserMenu(self):
         
         action = None
-        for _, username, token in generate_tokens(TOKEN_PATH, 'github'):
+        for _, username, token in generate_tokens(CONFIG_PATH, 'github'):
             
             try:
                 url = Github(token).get_user().avatar_url
@@ -294,7 +294,7 @@ class MainWidget(QMainWindow):
         
         if self.activeUserAction:
             username = str(self.activeUserAction.text())
-            token = load_token(TOKEN_PATH, 'github', username) 
+            token = load_token(CONFIG_PATH, 'github', username) 
             self.github = Github(token)
         else:
             self.github = None
@@ -319,7 +319,7 @@ class MainWidget(QMainWindow):
         if wizard.exec_():
             username = str(wizard.field('username').toString())
             token = str(wizard.field('token').toString())
-            store_token(TOKEN_PATH, 'github', username, token)
+            store_token(CONFIG_PATH, 'github', username, token)
             self.authenticate()
             self.reposRefresh()
             self.updateImage()

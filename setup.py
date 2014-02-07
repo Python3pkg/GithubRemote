@@ -6,7 +6,7 @@ import setuptools
 if __name__ == "__main__":
     setuptools.setup(
         name="GithubRemote",
-        version='0.1.0',
+        version='0.1.1',
         description="Access remote github repos",
         license="BSD",
         author="Cameron Brandon White",
@@ -41,6 +41,7 @@ if __name__ == "__main__":
             "Intended Audience :: End Users/Desktop",
             "Operating System :: OS Independent",
             "Programming Language :: Python :: 2.7",
+            "Programming Language :: Python :: 2.6",
         ],
         include_package_data=True,
     )
