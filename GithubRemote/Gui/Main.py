@@ -161,7 +161,8 @@ class MainWidget(QMainWindow):
         # Update
 
         self.loadUserMenu()
-        self.activeUserAction.setVisible(False)
+        if self.activeUserAction:
+            self.activeUserAction.setVisible(False)
         self.authenticate()
         self.actionsUpdate()
         self.reposRefresh()
@@ -273,8 +274,8 @@ class MainWidget(QMainWindow):
             imageLabel.setMargin(5)
 
             self.starsTableWidget.setCellWidget(row, 0, imageLabel)
-            label = QLabel('<b>{}/{}</b><br />{}'.format(
-                str(repo.owner.login), str(repo.name), str(repo.description)))
+            label = QLabel(u'<b>{}/{}</b><br />{}'.format(
+                unicode(repo.owner.login), unicode(repo.name), unicode(repo.description)))
             label.setAlignment(Qt.AlignVCenter)
             label.setMargin(5)
             label.setWordWrap(True)
@@ -291,12 +292,13 @@ class MainWidget(QMainWindow):
     @waiting_effects
     def authenticate(self):
         
-        username = str(self.activeUserAction.text())
-        try:
+        if self.activeUserAction:
+            username = str(self.activeUserAction.text())
             token = load_token(TOKEN_PATH, 'github', username) 
             self.github = Github(token)
-        except IOError, EOFError:
+        else:
             self.github = None
+
     
     def actionsUpdate(self):
         # TODO disable if no user is logged in

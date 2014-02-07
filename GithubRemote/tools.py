@@ -7,45 +7,53 @@ from github.Authorization import Authorization
 from github.Requester import Requester
 import re
 import argparse
-import json
+import ConfigParser
+
+SECTION = 'accounts'
 
 def store_token(file_path, account_type, username, token):
     
-    try:
-        with open(file_path, 'r') as f:
-            d = json.load(f)
-    except IOError:
-        d = {}
-    
-    if account_type not in d:
-        d[account_type] = {}
-    if username not in d[account_type]:
-        d[account_type][username] = {}
+    config = ConfigParser.ConfigParser()
 
-    d[account_type][username]['token'] = token
+    config.read(file_path)
 
-    with open(file_path, 'w+') as f:
-        json.dump(d, f)
+    if not config.has_section(SECTION):
+        config.add_section(SECTION)
+
+    config.set(
+        SECTION, 
+        '{}.{}.token'.format(account_type, username),
+        token
+    )
+
+    with open(file_path, 'wb') as configfile:
+        config.write(configfile)
 
 def load_token(file_path, account_type, username):
 
-    with open(file_path, 'r') as f:
-        try: 
-            return json.load(f)[account_type][username]['token']
-        except KeyError:
-            return None
+    config = ConfigParser.ConfigParser()
+
+    config.read(file_path)
+    
+    option = '{}.{}.token'.format(account_type, username)
+
+    token = None
+    if config.has_option(SECTION, option):
+        token = config.get(SECTION, option)
+
+    return token
 
 def generate_tokens(file_path, account_type):
     
-    with open(file_path, 'r') as f:
-        try: 
-            j = json.load(f)
-            for username in j[account_type]:
-                token = j[account_type][username]['token']
-                yield (account_type, username, token)
+    config = ConfigParser.ConfigParser()
 
-        except (IOError, KeyError):
-            pass
+    config.read(file_path)
+    
+    if config.has_section(SECTION):
+        for option, value in config.items(SECTION):
+            if re.search('^\w+\.\w+\.token$', option):
+                account_type, username, _ = option.split('.')
+                yield account_type, username, value
 
 def gitignore_types(github):
     for i in github.get_user('github')\

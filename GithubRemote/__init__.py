@@ -1,1 +1,1 @@
-TOKEN_PATH = './token.json'
+TOKEN_PATH = './config.cfg'
