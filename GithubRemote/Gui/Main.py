@@ -22,7 +22,7 @@ import os
 
 def image_path(image_name):
     return os.path.abspath(resource_filename(
-        'GitRemote.Gui.Images', image_name))
+        'GithubRemote.Gui.Images', image_name))
 
 class MainWidget(QMainWindow):
 
@@ -30,7 +30,7 @@ class MainWidget(QMainWindow):
     def __init__(self, parent=None):
         super(MainWidget, self).__init__(
                 parent,
-                windowTitle='GitRemote',
+                windowTitle='GithubRemote',
                 windowIcon=QIcon(image_path('git.png')),
                 geometry=QRect(300, 300, 600, 372))
 

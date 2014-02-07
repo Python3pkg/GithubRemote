@@ -5,27 +5,27 @@ import setuptools
 
 if __name__ == "__main__":
     setuptools.setup(
-        name="GitRemote",
+        name="GithubRemote",
         version='0.1.0',
         description="Access remote github repos",
         license="BSD",
         author="Cameron Brandon White",
         author_email="cameronbwhite90@gmail.com",
-        url="https://github.com/cameronbwhite/GitRemote",
+        url="https://github.com/cameronbwhite/GithubRemote",
         provides=[
-            "GitRemote",
+            "GithubRemote",
         ],
         packages=[
-            "GitRemote",
-            "GitRemote.Gui",
+            "GithubRemote",
+            "GithubRemote.Gui",
         ],
         scripts = [
-            "gitremote-qt",
-            "gitremote"
+            "githubremote-qt",
+            "githubremote"
         ],
         package_data={
-            'GitRemote': ["LICENSE", "README.md"],
-            'GitRemote.Gui.Images': [
+            'GithubRemote': ["LICENSE", "README.md"],
+            'GithubRemote.Gui.Images': [
                 'git.png', 'book_16.png', 'book_32.png',
                 'book_fork_16.png', 'star_16.png', 'star_32.png',
                 'fork_16.png', 'eye_16.png', 'plus_48.png',

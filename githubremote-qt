@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
 from PyQt4.QtGui import QApplication
-from GitRemote.Gui.Main import MainWidget
+from GithubRemote.Gui.Main import MainWidget
 import sys
 
 def main():
