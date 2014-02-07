@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
 from .tools import waiting_effects
-from ..tools import request_token, Require2FAError, AuthenticationError
 from github import Github
-from github.GithubException import BadCredentialsException
+from github.GithubException import BadCredentialsException, \
+    TwoFactorException, GithubException
 from github.Authorization import Authorization
 from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
@@ -126,14 +126,15 @@ class GithubCredentialsWizardPage(QWizardPage):
             username = str(self.field('username').toString())
             password = str(self.field('password').toString())
             try: 
-                authentication = request_token(username, password, ['repo'], 'QT TEST') 
-            except Require2FAError:
+                g = Github(username, password)
+                user = g.get_user()
+                authentication = user.create_authorization(scopes=['repo'], note='test')
+            except TwoFactorException:
                 self.require_2fa = True
                 return True
-            except AuthenticationError:
+            except GithubException:
                 self.require_2fa = False
                 return False
-            print('authetication with out error')
             self.setField('token', str(authentication.token))
             self.require_2fa = False
             return True
@@ -208,12 +209,14 @@ class Github2FAWizardPage(QWizardPage):
 
         username = str(self.field('username').toString())
         password = str(self.field('password').toString())
-        code = int(self.field('2fa_code').toString())
+        code = str(self.field('2fa_code').toString())
 
         try: # to use 2fa code
-            authentication = request_token(
-                    username, password, ['repo'], 'QT TEST', code) 
-        except AuthenticationError:
+            g = Github(username, password)
+            user = g.get_user()
+            authentication = user.create_authorization(
+                   scopes=['repo'], note='test', onetime_password=code)
+        except GithubException:
             self.wizard().back() # start over TODO make sure this works
             return False
 
