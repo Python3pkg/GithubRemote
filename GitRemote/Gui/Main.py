@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (C) 2013, Cameron White
+from pkg_resources import resource_filename
 from .. import TOKEN_PATH
 from .tools import waiting_effects
 from ..tools import load_token, store_token, generate_tokens
@@ -17,7 +18,11 @@ from PyQt4.QtGui import QWizardPage, QWizard, QRadioButton, QLineEdit, \
 from AddRepoWizard import AddRepoWizard
 from AddAccountWizard import AddAccountWizard
 import urllib
+import os
 
+def image_path(image_name):
+    return os.path.abspath(resource_filename(
+        'GitRemote.Gui.Images', image_name))
 
 class MainWidget(QMainWindow):
 
@@ -26,35 +31,35 @@ class MainWidget(QMainWindow):
         super(MainWidget, self).__init__(
                 parent,
                 windowTitle='GitRemote',
-                windowIcon=QIcon('images/git.png'),
+                windowIcon=QIcon(image_path('git.png')),
                 geometry=QRect(300, 300, 600, 372))
 
-        self.repo_pixmap = QPixmap('images/book_16.png')
-        self.big_repo_pixmap = QPixmap('images/book_32.png')
-        self.repo_fork_pixmap = QPixmap('images/book_fork_16.png')
-        self.star_pixmap = QPixmap('images/star_16.png')
-        self.big_star_pixmap = QPixmap('images/star_32.png')
-        self.fork_pixmap = QPixmap('images/fork_16.png')
-        self.eye_pixmap = QPixmap('images/eye_16.png')
+        self.repo_pixmap = QPixmap(image_path('book_16.png'))
+        self.big_repo_pixmap = QPixmap(image_path('book_32.png'))
+        self.repo_fork_pixmap = QPixmap(image_path('book_fork_16.png'))
+        self.star_pixmap = QPixmap(image_path('star_16.png'))
+        self.big_star_pixmap = QPixmap(image_path('star_32.png'))
+        self.fork_pixmap = QPixmap(image_path('fork_16.png'))
+        self.eye_pixmap = QPixmap(image_path('eye_16.png'))
 
         self.github = None        
 
         # Actions
 
         self.repoAddAction = QAction(
-                QIcon('images/plus_48.png'),
+                QIcon(image_path('plus_48.png')),
                 '&Add Repo', self,
                 statusTip='Add a new repo')
         self.repoAddAction.triggered.connect(self.repoAdd)
         
         self.repoRemoveAction = QAction(
-                QIcon('images/minus.png'),
+                QIcon(image_path('minus.png')),
                 '&Remove Repo', self,
                 statusTip='Remove repo')
         self.repoRemoveAction.triggered.connect(self.repoRemove)
 
         self.repoRefreshAction = QAction(
-                QIcon('images/refresh.png'),
+                QIcon(image_path('refresh.png')),
                 'Refresh', self,
                 statusTip='Refresh list of repos')
         self.repoRefreshAction.triggered.connect(self.reposRefresh)
